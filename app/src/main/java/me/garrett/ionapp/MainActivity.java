@@ -5,11 +5,15 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -28,6 +32,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ForkJoinPool;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,7 +54,12 @@ public class MainActivity extends AppCompatActivity {
         );
 
         Button loginButton = findViewById(R.id.login_button);
-        loginButton.setOnClickListener(view -> authorize());
+        if (authState.isAuthorized()) {
+            updateDisplay();
+        } else {
+            loginButton.setOnClickListener(view -> authorize());
+        }
+
     }
 
     @Override
@@ -56,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void authorize() {
+        System.out.println("authorize");
         AuthorizationRequest authRequest = new AuthorizationRequest.Builder(
                 Ion.SERVICE_CONFIG,
                 Ion.CLIENT_ID,
@@ -68,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onAuthResult(AuthorizationService authService, ActivityResult result) {
+        System.out.println("onAuthResult");
         assert result.getData() != null;
         AuthorizationResponse response = AuthorizationResponse.fromIntent(result.getData());
         AuthorizationException exception = AuthorizationException.fromIntent(result.getData());
@@ -79,13 +94,16 @@ public class MainActivity extends AppCompatActivity {
             exception.printStackTrace();
             //TODO: Handle failure
         }
-        authService.dispose();
     }
 
     private void exchangeCode(AuthorizationService authService, TokenRequest tokenRequest) {
+        System.out.println("exchangeCode");
         authService.performTokenRequest(tokenRequest, (response, exception) -> {
             authState.update(response, exception);
             if (response != null) {
+                System.out.println("Saving authState");
+                getSharedPreferences(getString(R.string.auth_file_key), Context.MODE_PRIVATE).edit()
+                        .putString("authState", authState.jsonSerializeString()).apply();
                 updateDisplay();
             } else {
                 assert exception != null;
@@ -96,28 +114,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDisplay() {
-        authState.performActionWithFreshTokens(authService, ((accessToken, idToken, ex) -> {
-            if (ex != null) {
-                try {
-                    HttpURLConnection conn = DefaultConnectionBuilder.INSTANCE.openConnection(Uri.parse(Ion.API_ROOT + "profile"));
-                    conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-                    conn.setInstanceFollowRedirects(false);
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                        StringBuilder builder = new StringBuilder();
-                        String line = "";
-                        while ((line = reader.readLine()) != null)
-                            builder.append(line);
-                        JSONObject profile = new JSONObject(builder.toString());
-                        String name = profile.getString("display_name");
-                        runOnUiThread(() -> {
-                            TextView textView = findViewById(R.id.auth_status);
-                            textView.setText("Logged in as " + name);
-                        });
+        System.out.println("updateDisplay");
+        TextView textView = findViewById(R.id.auth_status);
+        textView.setText("Updating...");
+        authState.performActionWithFreshTokens(authService, ((accessToken, idToken, exception) -> {
+            if (accessToken != null) {
+                ForkJoinPool.commonPool().execute(() -> {
+                    try {
+                        HttpsURLConnection conn = (HttpsURLConnection) new URL(Ion.API_ROOT + "profile").openConnection();
+                        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                        conn.setInstanceFollowRedirects(false);
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                            StringBuilder builder = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null)
+                                builder.append(line);
+                            JSONObject profile = new JSONObject(builder.toString());
+                            String name = profile.getString("display_name");
+                            runOnUiThread(() -> {
+                                textView.setText("Logged in as " + name);
+                                Snackbar.make(textView, "Logged in as " + name, 3000).show();
+                            });
+                        }
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                        //TODO: Handle error
                     }
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                    //TODO: Handle error
-                }
+                });
+            } else {
+                assert exception != null;
+                exception.printStackTrace();
             }
         }));
     }

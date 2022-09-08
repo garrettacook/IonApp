@@ -25,6 +25,7 @@ import net.openid.appauth.TokenRequest;
 import net.openid.appauth.connectivity.DefaultConnectionBuilder;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +34,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 getSharedPreferences(getString(R.string.auth_file_key), Context.MODE_PRIVATE).edit()
                         .putString("authState", authState.jsonSerializeString()).apply();
                 updateDisplay();
+                showBusLocation("JT-102");
             } else {
                 assert exception != null;
                 exception.printStackTrace();
@@ -113,15 +117,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateDisplay() {
-        System.out.println("updateDisplay");
-        TextView textView = findViewById(R.id.auth_status);
-        textView.setText("Updating...");
+    private void executeQuery(@NotNull String endPoint, Consumer<JSONObject> callback) {
         authState.performActionWithFreshTokens(authService, ((accessToken, idToken, exception) -> {
             if (accessToken != null) {
                 ForkJoinPool.commonPool().execute(() -> {
                     try {
-                        HttpsURLConnection conn = (HttpsURLConnection) new URL(Ion.API_ROOT + "profile").openConnection();
+                        HttpsURLConnection conn = (HttpsURLConnection) new URL(Ion.API_ROOT + endPoint).openConnection();
                         conn.setRequestProperty("Authorization", "Bearer " + accessToken);
                         conn.setInstanceFollowRedirects(false);
                         try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
@@ -129,12 +130,7 @@ public class MainActivity extends AppCompatActivity {
                             String line;
                             while ((line = reader.readLine()) != null)
                                 builder.append(line);
-                            JSONObject profile = new JSONObject(builder.toString());
-                            String name = profile.getString("display_name");
-                            runOnUiThread(() -> {
-                                textView.setText("Logged in as " + name);
-                                Snackbar.make(textView, "Logged in as " + name, 3000).show();
-                            });
+                            callback.accept(new JSONObject(builder.toString()));
                         }
                     } catch (IOException | JSONException e) {
                         e.printStackTrace();
@@ -146,6 +142,46 @@ public class MainActivity extends AppCompatActivity {
                 exception.printStackTrace();
             }
         }));
+    }
+
+    private void updateDisplay() {
+        System.out.println("updateDisplay");
+        TextView textView = findViewById(R.id.auth_status);
+        textView.setText("Updating...");
+        executeQuery("profile", profile -> {
+            try {
+                String name = profile.getString("display_name");
+                runOnUiThread(() -> {
+                    //textView.setText("Logged in as " + name);
+                    Snackbar.make(textView, "Logged in as " + name, 3000).show();
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void showBusLocation(@NotNull String busRoute) {
+        executeQuery("bus", json -> {
+            try {
+                JSONArray busArray = json.getJSONArray("results");
+                Optional<JSONObject> bus = Ion.findBus(busArray, b -> b.getString("route_name").equals(busRoute), b -> b);
+                if (bus.isPresent()) {
+                    String location = Ion.getBusLocationMessage(
+                            Ion.getBusCoordinates(bus.get().getString("space")),
+                            busArray
+                    );
+                    runOnUiThread(() -> {
+                        TextView textView = findViewById(R.id.auth_status);
+                        textView.setText(busRoute + " is " + location);
+                    });
+                } else {
+                    //TODO: Handle doesn't exist
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }

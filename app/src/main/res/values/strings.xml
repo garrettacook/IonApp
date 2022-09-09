@@ -1,4 +1,3 @@
 <resources>
     <string name="app_name">Ion Test App</string>
-    <string name='auth_file_key'>me.garrett.ionapp.AUTH_PREFERENCE_FILE_KEY</string>
 </resources>

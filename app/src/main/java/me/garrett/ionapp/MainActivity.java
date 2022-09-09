@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
@@ -22,7 +21,6 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenRequest;
-import net.openid.appauth.connectivity.DefaultConnectionBuilder;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -31,8 +29,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private AuthorizationService authService;
     private ActivityResultLauncher<Intent> authResultLauncher;
-    private final @NotNull AuthState authState = new AuthState(Ion.SERVICE_CONFIG);
+    private final @NotNull AuthState authState = new AuthState(IonUtils.SERVICE_CONFIG);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +72,11 @@ public class MainActivity extends AppCompatActivity {
     public void authorize() {
         System.out.println("authorize");
         AuthorizationRequest authRequest = new AuthorizationRequest.Builder(
-                Ion.SERVICE_CONFIG,
-                Ion.CLIENT_ID,
+                IonUtils.SERVICE_CONFIG,
+                IonUtils.CLIENT_ID,
                 ResponseTypeValues.CODE, // the response_type value: we want a code
                 Uri.parse("https://gcook.sites.tjhsst.edu/appauth") // the redirect URI to which the auth response is sent
-        ).setScope(Ion.SCOPE).build();
+        ).setScope(IonUtils.SCOPE).build();
 
         AuthorizationService authService = new AuthorizationService(this);
         authResultLauncher.launch(authService.getAuthorizationRequestIntent(authRequest));
@@ -117,31 +115,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void executeQuery(@NotNull String endPoint, Consumer<JSONObject> callback) {
-        authState.performActionWithFreshTokens(authService, ((accessToken, idToken, exception) -> {
-            if (accessToken != null) {
-                ForkJoinPool.commonPool().execute(() -> {
-                    try {
-                        HttpsURLConnection conn = (HttpsURLConnection) new URL(Ion.API_ROOT + endPoint).openConnection();
-                        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-                        conn.setInstanceFollowRedirects(false);
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                            StringBuilder builder = new StringBuilder();
-                            String line;
-                            while ((line = reader.readLine()) != null)
-                                builder.append(line);
-                            callback.accept(new JSONObject(builder.toString()));
-                        }
-                    } catch (IOException | JSONException e) {
-                        e.printStackTrace();
-                        //TODO: Handle error
-                    }
-                });
-            } else {
-                assert exception != null;
-                exception.printStackTrace();
-            }
-        }));
+    public static @NotNull String readString(@NotNull InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                builder.append(line);
+            return builder.toString();
+        }
+    }
+
+    private void handleConnectionError(@NotNull Exception exception) {
+        exception.printStackTrace();
+        Snackbar.make(findViewById(R.id.main_layout), exception.toString(), 3000).show();
     }
 
     private void updateDisplay() {
@@ -165,10 +151,10 @@ public class MainActivity extends AppCompatActivity {
         executeQuery("bus", json -> {
             try {
                 JSONArray busArray = json.getJSONArray("results");
-                Optional<JSONObject> bus = Ion.findBus(busArray, b -> b.getString("route_name").equals(busRoute), b -> b);
+                Optional<JSONObject> bus = IonUtils.findBus(busArray, b -> b.getString("route_name").equals(busRoute), b -> b);
                 if (bus.isPresent()) {
-                    String location = Ion.getBusLocationMessage(
-                            Ion.getBusCoordinates(bus.get().getString("space")),
+                    String location = IonUtils.getBusLocationMessage(
+                            IonUtils.getBusCoordinates(bus.get().getString("space")),
                             busArray
                     );
                     runOnUiThread(() -> {

@@ -12,8 +12,8 @@ import org.json.JSONObject;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public final class Ion {
-    private Ion() {
+public final class IonUtils {
+    private IonUtils() {
     }
 
     public static final String

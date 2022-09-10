@@ -2,15 +2,19 @@ package me.garrett.ionapp;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import net.openid.appauth.AuthorizationServiceConfiguration;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 public final class IonUtils {
     private IonUtils() {
@@ -29,7 +33,19 @@ public final class IonUtils {
                     Uri.parse(AUTHORIZATION_ENDPOINT),
                     Uri.parse(TOKEN_ENDPOINT));
 
-    public static @NotNull int[] getBusCoordinates(@NotNull String space) {
+    public static @NonNull
+    String readString(@NonNull InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                builder.append(line);
+            return builder.toString();
+        }
+    }
+
+    public static @NonNull
+    int[] getBusCoordinates(@NonNull String space) {
         if (space.length() >= 2 && space.charAt(0) == '_') {
             int number = Integer.parseInt(space.substring(1));
 
@@ -57,7 +73,8 @@ public final class IonUtils {
         throw new IllegalArgumentException("Unknown space format: " + space);
     }
 
-    public static @NotNull String getBusSpace(int row, int position) {
+    public static @NonNull
+    String getBusSpace(int row, int position) {
         int number;
         if (row == 0)
             number = position == 3 ? 41 : 3 - position;
@@ -72,7 +89,8 @@ public final class IonUtils {
         return "_" + number;
     }
 
-    public static @NotNull int[] getBusRowEnds(int row) {
+    public static @NonNull
+    int[] getBusRowEnds(int row) {
         if (row <= 1)
             return new int[]{-6, 3};
         else if (row == 2)
@@ -93,7 +111,7 @@ public final class IonUtils {
         R apply(T t) throws JSONException;
     }
 
-    public static <T> Optional<T> findBus(@NotNull JSONArray busArray, @NotNull JSONPredicate<JSONObject> predicate, @NotNull JSONFunction<JSONObject, T> function) {
+    public static <T> Optional<T> findBus(@NonNull JSONArray busArray, @NonNull JSONPredicate<JSONObject> predicate, @NonNull JSONFunction<JSONObject, T> function) {
         try {
             for (int i = 0; i < busArray.length(); i++) {
                 JSONObject bus = busArray.getJSONObject(i);
@@ -107,11 +125,13 @@ public final class IonUtils {
         return Optional.empty();
     }
 
-    public static @NotNull String getBusLocationMessage(int[] coords, @NotNull JSONArray busArray) {
+    public static @NonNull
+    String getBusLocationMessage(int[] coords, @NonNull JSONArray busArray) {
         return getBusLocationMessage(coords[0], coords[1], busArray);
     }
 
-    public static @NotNull String getBusLocationMessage(int row, int position, @NotNull JSONArray busArray) {
+    public static @NonNull
+    String getBusLocationMessage(int row, int position, @NonNull JSONArray busArray) {
         String message = (row <= 1 ? "by the curb" : "in the lot")
                 + " on the " + (position < 0 ? "left" : "right");
 

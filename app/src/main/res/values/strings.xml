@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Ion Test App</string>
+    <string name="ion_login_button">Login with Ion</string>
+    <string name="login_required">You must login to continue.</string>
 </resources>

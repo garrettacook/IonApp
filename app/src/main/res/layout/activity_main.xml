@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" />
+    tools:context=".MainActivity">
+
+    <Spinner
+        android:id="@+id/busSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/bus_route"
+        android:prompt="@string/bus_route"
+        android:spinnerMode="dialog"
+        app:layout_constraintBottom_toBottomOf="@+id/busSpinnerLabel"
+        app:layout_constraintStart_toEndOf="@+id/busSpinnerLabel"
+        app:layout_constraintTop_toTopOf="@+id/busSpinnerLabel" />
+
+    <TextView
+        android:id="@+id/busSpinnerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/bus_route"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/busStatusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/findBusButton"
+        app:layout_constraintTop_toBottomOf="@+id/findBusButton" />
+
+    <Button
+        android:id="@+id/findBusButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/find_bus"
+        app:layout_constraintStart_toStartOf="@+id/busSpinnerLabel"
+        app:layout_constraintTop_toBottomOf="@+id/busSpinnerLabel" />
+</androidx.constraintlayout.widget.ConstraintLayout>

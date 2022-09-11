@@ -20,6 +20,8 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenRequest;
 
+import me.garrett.ionapp.api.IonApi;
+
 public class LoginActivity extends AppCompatActivity {
 
     private AuthorizationService authService;
@@ -74,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
         authService.performTokenRequest(tokenRequest, (response, exception) -> {
             IonApi.getInstance(this).update(response, exception);
             if (response != null) {
-                //TODO: Success, navigate to MainActivity
+                startActivity(new Intent(this, MainActivity.class));
             } else {
                 assert exception != null;
                 handleConnectionError(exception);

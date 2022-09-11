@@ -2,4 +2,8 @@
     <string name="app_name">Ion Test App</string>
     <string name="ion_login_button">Login with Ion</string>
     <string name="login_required">You must login to continue.</string>
+    <string name="find_bus">Find Bus</string>
+    <string name="bus_route">Bus Route</string>
+    <string name="bus_status">%s is %s.</string>
+    <string name="updating">Updating...</string>
 </resources>

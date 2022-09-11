@@ -1,4 +1,4 @@
-package me.garrett.ionapp;
+package me.garrett.ionapp.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,13 +14,17 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 import javax.net.ssl.HttpsURLConnection;
+
+import me.garrett.ionapp.IonUtils;
 
 public class IonApi {
 
@@ -77,7 +81,7 @@ public class IonApi {
 
     @FunctionalInterface
     public interface IOFunction<T, R> {
-        R apply(T t) throws IOException;
+        R apply(T t) throws IOException, JSONException;
     }
 
     public @NonNull
@@ -89,8 +93,9 @@ public class IonApi {
                     try {
                         HttpsURLConnection conn = (HttpsURLConnection) new URL(IonUtils.API_ROOT + endPoint).openConnection();
                         conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+                        conn.setRequestProperty("Accept", "application/json");
                         future.complete(function.apply(conn));
-                    } catch (IOException e) {
+                    } catch (IOException | JSONException e) {
                         future.completeExceptionally(e);
                     }
                 });
@@ -99,6 +104,23 @@ public class IonApi {
             }
         });
         return future;
+    }
+
+    public @NonNull
+    <T> CompletableFuture<T> get(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<JSONObject, T> function) {
+        return connect(authService, endPoint, conn -> {
+            if (conn.getResponseCode() == 200) {
+                String jsonString = IonUtils.readString(conn.getInputStream());
+                return function.apply(new JSONObject(jsonString));
+            } else {
+                throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
+            }
+        });
+    }
+
+    public @NonNull
+    CompletableFuture<List<Bus>> getBusList(@NonNull AuthorizationService authService) {
+        return get(authService, "bus", json -> Bus.listFromJson(json.getJSONArray("results")));
     }
 
 }

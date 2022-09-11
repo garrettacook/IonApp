@@ -6,15 +6,13 @@ import androidx.annotation.NonNull;
 
 import net.openid.appauth.AuthorizationServiceConfiguration;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Optional;
+import java.util.List;
+
+import me.garrett.ionapp.api.Bus;
 
 public final class IonUtils {
     private IonUtils() {
@@ -101,37 +99,13 @@ public final class IonUtils {
             throw new IllegalArgumentException("Unknown row: " + row);
     }
 
-    @FunctionalInterface
-    public interface JSONPredicate<T> {
-        boolean test(T t) throws JSONException;
-    }
-
-    @FunctionalInterface
-    public interface JSONFunction<T, R> {
-        R apply(T t) throws JSONException;
-    }
-
-    public static <T> Optional<T> findBus(@NonNull JSONArray busArray, @NonNull JSONPredicate<JSONObject> predicate, @NonNull JSONFunction<JSONObject, T> function) {
-        try {
-            for (int i = 0; i < busArray.length(); i++) {
-                JSONObject bus = busArray.getJSONObject(i);
-
-                if (predicate.test(bus))
-                    return Optional.of(function.apply(bus));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return Optional.empty();
+    public static @NonNull
+    String getBusLocationMessage(int[] coords, @NonNull List<Bus> busList) {
+        return getBusLocationMessage(coords[0], coords[1], busList);
     }
 
     public static @NonNull
-    String getBusLocationMessage(int[] coords, @NonNull JSONArray busArray) {
-        return getBusLocationMessage(coords[0], coords[1], busArray);
-    }
-
-    public static @NonNull
-    String getBusLocationMessage(int row, int position, @NonNull JSONArray busArray) {
+    String getBusLocationMessage(int row, int position, @NonNull List<Bus> busList) {
         String message = (row <= 1 ? "by the curb" : "in the lot")
                 + " on the " + (position < 0 ? "left" : "right");
 
@@ -141,12 +115,12 @@ public final class IonUtils {
 
         if (row == 1 || row == 3) {
             String aheadSpace = getBusSpace(row - 1, position);
-            Optional<String> aheadBus = findBus(busArray,
-                    bus -> bus.getString("space").equals(aheadSpace),
-                    bus -> bus.getString("route_name")
-            );
-            if (aheadBus.isPresent())
-                message += ", behind " + aheadBus.get();
+            for (Bus bus : busList) {
+                if (aheadSpace.equals(bus.getSpace())) {
+                    message += ", behind " + bus.getRoute();
+                    break;
+                }
+            }
         }
 
         return message;

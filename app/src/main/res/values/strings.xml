@@ -4,6 +4,9 @@
     <string name="login_required">You must login to continue.</string>
     <string name="find_bus">Find Bus</string>
     <string name="bus_route">Bus Route</string>
+    <string name="bus_arrived">%s has arrived</string>
     <string name="bus_status">%s is %s.</string>
+    <string name="generic_bus_status">It is %s.</string>
     <string name="updating">Updating...</string>
+    <string name="bus_channel_name">Bus Updates</string>
 </resources>

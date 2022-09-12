@@ -1,5 +1,7 @@
 package me.garrett.ionapp;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,9 +13,13 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import net.openid.appauth.AuthorizationService;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import me.garrett.ionapp.api.Bus;
@@ -22,6 +28,8 @@ import me.garrett.ionapp.api.IonApi;
 public class MainActivity extends AppCompatActivity {
 
     private static final String BUS_ROUTE_KEY = "busRoute";
+    private static final String BUS_CHANNEL_ID = "me.garrett.ionapp.BUS_UPDATES";
+    private static final int BUS_NOTIFICATION_ID = 100;
 
     private AuthorizationService authService;
 
@@ -29,6 +37,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        NotificationChannel channel = new NotificationChannel(
+                BUS_CHANNEL_ID, getString(R.string.bus_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        getSystemService(NotificationManager.class).createNotificationChannel(channel);
 
         if (!IonApi.getInstance(this).isAuthorized())
             startActivity(new Intent(this, LoginActivity.class));
@@ -61,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button findBusButton = findViewById(R.id.findBusButton);
-        findBusButton.setOnClickListener(view -> findBusLocation((String) busSpinner.getSelectedItem()));
+        findBusButton.setOnClickListener(this::onFindBusClick);
     }
 
     @Override
@@ -71,26 +84,46 @@ public class MainActivity extends AppCompatActivity {
         authService.dispose();
     }
 
-    private void findBusLocation(@NonNull String busRoute) {
+    private void onFindBusClick(View view) {
         TextView statusTextView = findViewById(R.id.busStatusTextView);
         statusTextView.setText(R.string.updating);
 
-        IonApi.getInstance(this).getBusList(authService).thenAcceptAsync(busList -> {
+        String route = (String) ((Spinner) findViewById(R.id.busSpinner)).getSelectedItem();
+        findBusLocation(route).thenAcceptAsync(
+                optional -> {
+                    if (optional.isPresent()) {
+                        String message = getString(R.string.bus_status, route, optional.get());
+                        sendBusArrivalNotification(route, optional.get());
+                        runOnUiThread(() -> statusTextView.setText(message));
+                    } else {
+                        runOnUiThread(() -> statusTextView.setText(route + " is not in the bus depo."));
+                    }
+                }
+        );
+    }
+
+    private void sendBusArrivalNotification(@NonNull String route, @NonNull String locationMessage) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, BUS_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(getString(R.string.bus_arrived, route))
+                .setContentText(getString(R.string.generic_bus_status, locationMessage))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat.from(this).notify(BUS_NOTIFICATION_ID, builder.build());
+    }
+
+    private @NonNull
+    CompletableFuture<Optional<String>> findBusLocation(@NonNull String busRoute) {
+        return IonApi.getInstance(this).getBusList(authService).thenApplyAsync(busList -> {
             for (Bus bus : busList) {
                 if (bus.getRoute().equals(busRoute)) {
-                    String message = "not in the bus depo";
                     if (bus.getSpace() != null) {
-                        message = IonUtils.getBusLocationMessage(
-                                IonUtils.getBusCoordinates(bus.getSpace()), busList);
+                        return Optional.of(IonUtils.getBusLocationMessage(
+                                IonUtils.getBusCoordinates(bus.getSpace()), busList));
                     }
-
-                    final String finalMessage = message;
-                    runOnUiThread(() ->
-                            statusTextView.setText(getString(R.string.bus_status, bus.getRoute(), finalMessage))
-                    );
-                    return;
+                    break;
                 }
             }
+            return Optional.empty();
         });
     }
 

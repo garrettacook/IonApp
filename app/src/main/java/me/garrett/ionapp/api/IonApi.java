@@ -65,6 +65,10 @@ public class IonApi {
         return authState.isAuthorized();
     }
 
+    public void clearAuthState() {
+        preferences.edit().remove(AUTH_STATE_KEY).apply();
+    }
+
     private void editAuthState() {
         preferences.edit().putString(AUTH_STATE_KEY, authState.jsonSerializeString()).apply();
     }

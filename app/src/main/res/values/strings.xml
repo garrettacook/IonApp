@@ -9,4 +9,5 @@
     <string name="generic_bus_status">It is %s.</string>
     <string name="updating">Updating...</string>
     <string name="bus_channel_name">Bus Updates</string>
+    <string name="logout">Logout</string>
 </resources>

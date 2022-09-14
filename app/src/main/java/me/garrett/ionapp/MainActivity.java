@@ -73,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(view -> {
+            IonApi.getInstance(this).clearAuthState();
+            startActivity(new Intent(this, LoginActivity.class));
+        });
+
         Button findBusButton = findViewById(R.id.findBusButton);
         findBusButton.setOnClickListener(this::onFindBusClick);
     }

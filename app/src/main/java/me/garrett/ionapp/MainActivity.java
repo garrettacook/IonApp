@@ -15,14 +15,21 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import net.openid.appauth.AuthorizationService;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import me.garrett.ionapp.api.Bus;
+import me.garrett.ionapp.api.CheckScheduleWorker;
 import me.garrett.ionapp.api.IonApi;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,6 +49,18 @@ public class MainActivity extends AppCompatActivity {
                 BUS_CHANNEL_ID, getString(R.string.bus_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT);
         getSystemService(NotificationManager.class).createNotificationChannel(channel);
+
+        PeriodicWorkRequest checkScheduleRequest = new
+                PeriodicWorkRequest.Builder(CheckScheduleWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(new Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "checkIonSchedule",
+                ExistingPeriodicWorkPolicy.KEEP,
+                checkScheduleRequest);
 
         if (!IonApi.getInstance(this).isAuthorized())
             startActivity(new Intent(this, LoginActivity.class));

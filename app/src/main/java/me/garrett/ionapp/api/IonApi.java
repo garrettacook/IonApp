@@ -18,6 +18,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -30,6 +32,8 @@ public class IonApi {
 
     private static final String AUTH_STATE_FILE = "me.garrett.ionapp.AUTH_STATE";
     private static final String AUTH_STATE_KEY = "authState";
+
+    public static final ZoneId ION_TIME_ZONE = ZoneId.of("America/New_York");
 
     private static @Nullable
     IonApi instance;
@@ -120,6 +124,11 @@ public class IonApi {
                 throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
             }
         });
+    }
+
+    public @NonNull
+    CompletableFuture<Schedule> getSchedule(@NonNull AuthorizationService authService, @NonNull Instant instant) {
+        return get(authService, String.format("schedule/%tF", instant.atZone(ION_TIME_ZONE)), Schedule::fromJson);
     }
 
     public @NonNull

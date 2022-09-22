@@ -51,9 +51,9 @@ public final class IonUtils {
                 // curb
 
                 if (number <= 9)
-                    return new int[]{0, 3 - number};
+                    return new int[]{0, 2 - number};
                 else if (number <= 40)
-                    return new int[]{1, number - 37};
+                    return new int[]{1, number - 38};
                 else if (number == 41)
                     return new int[]{0, 3};
 
@@ -61,9 +61,9 @@ public final class IonUtils {
                 // diagonals
 
                 if (number <= 22)
-                    return new int[]{2, 14 - number};
+                    return new int[]{2, 13 - number};
                 else if (number <= 30)
-                    return new int[]{3, 27 - number};
+                    return new int[]{3, 26 - number};
 
             }
 
@@ -75,13 +75,13 @@ public final class IonUtils {
     String getBusSpace(int row, int position) {
         int number;
         if (row == 0)
-            number = position == 3 ? 41 : 3 - position;
+            number = position == 2 ? 41 : 2 - position;
         else if (row == 1)
-            number = 37 + position;
+            number = 38 + position;
         else if (row == 2)
-            number = 14 - position;
+            number = 13 - position;
         else if (row == 3)
-            number = 27 - position;
+            number = 26 - position;
         else
             throw new IllegalArgumentException("Unknown row: " + row);
         return "_" + number;
@@ -90,11 +90,11 @@ public final class IonUtils {
     public static @NonNull
     int[] getBusRowEnds(int row) {
         if (row <= 1)
-            return new int[]{-6, 3};
+            return new int[]{-7, 2};
         else if (row == 2)
-            return new int[]{-8, 4};
+            return new int[]{-9, 3};
         else if (row == 3)
-            return new int[]{-3, 4};
+            return new int[]{-4, 3};
         else
             throw new IllegalArgumentException("Unknown row: " + row);
     }

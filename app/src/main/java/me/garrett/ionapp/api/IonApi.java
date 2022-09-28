@@ -21,6 +21,7 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
@@ -134,6 +135,22 @@ public class IonApi {
     public @NonNull
     CompletableFuture<List<Bus>> getBusList(@NonNull AuthorizationService authService) {
         return get(authService, "bus", json -> Bus.listFromJson(json.getJSONArray("results")));
+    }
+
+    public @NonNull
+    CompletableFuture<Optional<String>> findBusLocation(@NonNull AuthorizationService authService, @NonNull String busRoute) {
+        return getBusList(authService).thenApplyAsync(busList -> {
+            for (Bus bus : busList) {
+                if (bus.getRoute().equals(busRoute)) {
+                    if (bus.getSpace() != null) {
+                        return Optional.of(IonUtils.getBusLocationMessage(
+                                IonUtils.getBusCoordinates(bus.getSpace()), busList));
+                    }
+                    break;
+                }
+            }
+            return Optional.empty();
+        });
     }
 
 }

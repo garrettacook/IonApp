@@ -52,4 +52,31 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/beginCheckingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/begin_checking"
+        app:layout_constraintStart_toStartOf="@+id/findBusButton"
+        app:layout_constraintTop_toBottomOf="@+id/busStatusTextView" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/cancel"
+        app:layout_constraintStart_toStartOf="@+id/beginCheckingButton"
+        app:layout_constraintTop_toBottomOf="@+id/beginCheckingButton" />
+
+    <Button
+        android:id="@+id/resetWorkersButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="@string/reset_workers"
+        app:layout_constraintStart_toStartOf="@+id/cancelButton"
+        app:layout_constraintTop_toBottomOf="@+id/cancelButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

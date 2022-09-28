@@ -7,7 +7,11 @@
     <string name="bus_arrived">%s has arrived</string>
     <string name="bus_status">%s is %s.</string>
     <string name="generic_bus_status">It is %s.</string>
-    <string name="updating">Updating...</string>
+    <string name="updating">Updating…</string>
     <string name="bus_channel_name">Bus Updates</string>
     <string name="logout">Logout</string>
+    <string name="not_in_depo">%s is not in the bus depo.</string>
+    <string name="begin_checking">Begin Checking</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset_workers">Reset Workers</string>
 </resources>

@@ -34,6 +34,8 @@ public class CheckScheduleWorker extends Worker {
             Log.d("IonApp", "Checking schedule...");
             Schedule schedule = api.getSchedule(authService, Instant.now()).get();
             Instant checkTime = schedule.getEnd().minus(5, ChronoUnit.MINUTES);
+            if (checkTime.isBefore(Instant.now()))
+                return Result.success();
 
             Log.d("IonApp", "Scheduling alarm for " + checkTime);
             Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerService.class);

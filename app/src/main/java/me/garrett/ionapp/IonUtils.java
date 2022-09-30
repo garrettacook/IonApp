@@ -18,6 +18,8 @@ public final class IonUtils {
     private IonUtils() {
     }
 
+    // NOTE TO SELF: Ion refresh tokens expire after 30 days
+
     public static final String
             BASE_URL = "https://ion.tjhsst.edu/",
             CLIENT_ID = "kWQhxJDH8KZkd6gIiD7qI40KQhHl7pXngxvSPBy0",

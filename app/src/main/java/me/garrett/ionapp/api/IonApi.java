@@ -96,6 +96,7 @@ public class IonApi {
     public @NonNull
     <T> CompletableFuture<T> connect(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<HttpsURLConnection, T> function) {
         CompletableFuture<T> future = new CompletableFuture<>();
+        authState.setNeedsTokenRefresh(true); //DEBUG
         authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
             if (accessToken != null) {
                 ForkJoinPool.commonPool().execute(() -> {

@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 ExistingPeriodicWorkPolicy.KEEP,
                 checkScheduleRequest);
 
+        // redirect to login activity if not authorized
         if (!IonApi.getInstance(this).isAuthorized())
             startActivity(new Intent(this, LoginActivity.class));
 

@@ -18,7 +18,7 @@ public final class IonUtils {
     private IonUtils() {
     }
 
-    // NOTE TO SELF: Ion refresh tokens expire after 30 days
+    // NOTE TO SELF: Ion access tokens expire after 10 hours and Ion refresh tokens expire after 30 days
 
     public static final String
             BASE_URL = "https://ion.tjhsst.edu/",
@@ -64,7 +64,7 @@ public final class IonUtils {
 
                 if (number <= 22)
                     return new int[]{2, 13 - number};
-                else if (number <= 30)
+                else
                     return new int[]{3, 26 - number};
 
             }

@@ -88,6 +88,13 @@ public class IonApi {
         editAuthState();
     }
 
+    public void performActionWithFreshTokens(@NonNull AuthorizationService authService, @NonNull AuthState.AuthStateAction action) {
+        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
+            editAuthState(); // ENSURE SAVED STATE IS UP-TO-DATE
+            action.execute(accessToken, idToken, ex);
+        });
+    }
+
     @FunctionalInterface
     public interface IOFunction<T, R> {
         R apply(T t) throws IOException, JSONException;
@@ -96,8 +103,7 @@ public class IonApi {
     public @NonNull
     <T> CompletableFuture<T> connect(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<HttpsURLConnection, T> function) {
         CompletableFuture<T> future = new CompletableFuture<>();
-        authState.setNeedsTokenRefresh(true); //DEBUG
-        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
+        performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
             if (accessToken != null) {
                 ForkJoinPool.commonPool().execute(() -> {
                     try {

@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutionException;
 
+import me.garrett.ionapp.Notifications;
 import me.garrett.ionapp.StartFindBusWorkerService;
 
 public class CheckScheduleWorker extends Worker {
@@ -44,10 +45,12 @@ public class CheckScheduleWorker extends Worker {
             AlarmManager alarmManager = getApplicationContext().getSystemService(AlarmManager.class);
             alarmManager.cancel(pendingIntent); // avoid duplicate alarms
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, checkTime.toEpochMilli(), pendingIntent);
+            Notifications.sendStatusNotification(getApplicationContext(), "Scheduled alarm for " + checkTime);
             return Result.success();
 
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
+            Notifications.sendStatusNotification(getApplicationContext(), "Failed to check schedule");
             return Result.retry();
         }
     }

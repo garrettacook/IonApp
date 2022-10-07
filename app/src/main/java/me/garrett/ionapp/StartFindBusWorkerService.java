@@ -17,6 +17,7 @@ public class StartFindBusWorkerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("IonApp", "Starting find bus worker");
+        Notifications.sendStatusNotification(getApplicationContext(), "Starting find bus worker");
         FindBusWorker.start(getApplicationContext());
         stopSelf();
         return START_NOT_STICKY;

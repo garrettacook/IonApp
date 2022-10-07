@@ -39,10 +39,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        NotificationChannel channel = new NotificationChannel(
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        NotificationChannel busChannel = new NotificationChannel(
                 Notifications.BUS_CHANNEL_ID, getString(R.string.bus_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT);
-        getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        notificationManager.createNotificationChannel(busChannel);
+        NotificationChannel testChannel = new NotificationChannel(
+                Notifications.TEST_CHANNEL_ID, "Tests",
+                NotificationManager.IMPORTANCE_LOW);
+        notificationManager.createNotificationChannel(testChannel);
 
         PeriodicWorkRequest checkScheduleRequest = new
                 PeriodicWorkRequest.Builder(CheckScheduleWorker.class, 1, TimeUnit.HOURS)

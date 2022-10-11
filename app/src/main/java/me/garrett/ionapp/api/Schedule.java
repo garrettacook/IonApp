@@ -110,6 +110,10 @@ public class Schedule {
         return special;
     }
 
+    public boolean isEmpty() {
+        return blocks.isEmpty();
+    }
+
     @NonNull
     public List<Block> getBlocks() {
         return Collections.unmodifiableList(blocks);

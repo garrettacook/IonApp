@@ -88,6 +88,11 @@ public class IonApi {
         editAuthState();
     }
 
+    public @Nullable
+    AuthorizationException getAuthorizationException() {
+        return authState.getAuthorizationException();
+    }
+
     public void performActionWithFreshTokens(@NonNull AuthorizationService authService, @NonNull AuthState.AuthStateAction action) {
         authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
             editAuthState(); // ENSURE SAVED STATE IS UP-TO-DATE

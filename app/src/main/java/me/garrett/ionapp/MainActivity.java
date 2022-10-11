@@ -18,6 +18,9 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.google.android.material.snackbar.Snackbar;
+
+import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationService;
 
 import java.util.concurrent.TimeUnit;
@@ -68,15 +71,22 @@ public class MainActivity extends AppCompatActivity {
         authService = new AuthorizationService(this);
 
         Spinner busSpinner = findViewById(R.id.busSpinner);
-        IonApi.getInstance(this).getBusList(authService).thenAcceptAsync(busList -> runOnUiThread(() -> {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
-                    busList.stream().map(Bus::getRoute).collect(Collectors.toList()));
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            busSpinner.setAdapter(adapter);
+        IonApi.getInstance(this).getBusList(authService).whenCompleteAsync((busList, ex) -> runOnUiThread(() -> {
+            if (busList != null) {
 
-            String busRoute = Settings.getPreferences(this).getString(Settings.BUS_ROUTE_KEY, null);
-            if (busRoute != null)
-                busSpinner.setSelection(adapter.getPosition(busRoute));
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                        busList.stream().map(Bus::getRoute).collect(Collectors.toList()));
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                busSpinner.setAdapter(adapter);
+
+                String busRoute = Settings.getPreferences(this).getString(Settings.BUS_ROUTE_KEY, null);
+                if (busRoute != null)
+                    busSpinner.setSelection(adapter.getPosition(busRoute));
+
+            } else {
+                AuthorizationException authException = IonApi.getInstance(this).getAuthorizationException();
+                Snackbar.make(busSpinner, (authException != null ? authException : ex).toString(), 5000).show();
+            }
         }));
 
         busSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -129,13 +139,22 @@ public class MainActivity extends AppCompatActivity {
         statusTextView.setText(R.string.updating);
 
         String route = (String) ((Spinner) findViewById(R.id.busSpinner)).getSelectedItem();
-        IonApi.getInstance(this).findBusLocation(authService, route).thenAcceptAsync(
-                optional -> {
-                    if (optional.isPresent()) {
-                        String message = getString(R.string.bus_status, route, optional.get());
-                        runOnUiThread(() -> statusTextView.setText(message));
+        IonApi.getInstance(this).findBusLocation(authService, route).whenComplete(
+                (optional, ex) -> {
+                    if (ex == null) {
+
+                        if (optional.isPresent()) {
+                            String message = getString(R.string.bus_status, route, optional.get());
+                            runOnUiThread(() -> statusTextView.setText(message));
+                        } else {
+                            runOnUiThread(() -> statusTextView.setText(getString(R.string.not_in_depo, route)));
+                        }
+
                     } else {
-                        runOnUiThread(() -> statusTextView.setText(getString(R.string.not_in_depo, route)));
+                        runOnUiThread(() -> {
+                            AuthorizationException authException = IonApi.getInstance(this).getAuthorizationException();
+                            Snackbar.make(statusTextView, (authException != null ? authException : ex).toString(), 5000).show();
+                        });
                     }
                 }
         );

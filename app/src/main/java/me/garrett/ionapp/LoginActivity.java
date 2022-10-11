@@ -39,6 +39,11 @@ public class LoginActivity extends AppCompatActivity {
 
         Button loginButton = findViewById(R.id.loginButton);
         loginButton.setOnClickListener(view -> authorize());
+
+        AuthorizationException exception = IonApi.getInstance(this).getAuthorizationException();
+        if (exception != null) {
+            Snackbar.make(loginButton, exception.toString(), 5000).show();
+        }
     }
 
     @Override

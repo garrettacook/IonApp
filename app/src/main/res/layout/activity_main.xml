@@ -75,8 +75,17 @@
         android:id="@+id/resetWorkersButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="50dp"
         android:text="@string/reset_workers"
         app:layout_constraintStart_toStartOf="@+id/cancelButton"
         app:layout_constraintTop_toBottomOf="@+id/cancelButton" />
+
+    <Button
+        android:id="@+id/authStateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Show Auth State"
+        app:layout_constraintStart_toStartOf="@+id/resetWorkersButton"
+        app:layout_constraintTop_toBottomOf="@+id/resetWorkersButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

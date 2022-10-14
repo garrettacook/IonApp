@@ -125,6 +125,9 @@ public class MainActivity extends AppCompatActivity {
         Button resetWorkersButton = findViewById(R.id.resetWorkersButton);
         resetWorkersButton.setOnClickListener(view ->
                 WorkManager.getInstance(this).cancelUniqueWork(CHECK_SCHEDULE_UNIQUE_WORK_NAME));
+
+        Button authStateButton = findViewById(R.id.authStateButton);
+        authStateButton.setOnClickListener(view -> Snackbar.make(view, IonApi.getInstance(this).asJson(), 5000).show());
     }
 
     @Override

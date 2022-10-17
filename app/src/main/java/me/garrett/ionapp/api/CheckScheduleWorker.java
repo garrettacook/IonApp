@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutionException;
 
 import me.garrett.ionapp.Notifications;
-import me.garrett.ionapp.StartFindBusWorkerService;
+import me.garrett.ionapp.StartFindBusWorkerReceiver;
 
 public class CheckScheduleWorker extends Worker {
 
@@ -43,8 +43,8 @@ public class CheckScheduleWorker extends Worker {
                 return Result.success();
 
             Log.d("IonApp", "Scheduling alarm for " + checkTime);
-            Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerService.class);
-            PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
             AlarmManager alarmManager = getApplicationContext().getSystemService(AlarmManager.class);
             alarmManager.cancel(pendingIntent); // avoid duplicate alarms

@@ -16,11 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IonTestApp"
         tools:targetApi="31">
-        <service
-            android:name=".StartFindBusWorkerService"
-            android:enabled="true"
-            android:exported="false" />
-
+        <receiver
+            android:name=".StartFindBusWorkerReceiver"
+            android:enabled="true" />
         <activity
             android:name=".LoginActivity"
             android:exported="false" />

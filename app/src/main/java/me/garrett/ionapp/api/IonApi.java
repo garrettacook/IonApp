@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,7 @@ public class IonApi {
 
     private static final String AUTH_STATE_FILE = "me.garrett.ionapp.AUTH_STATE";
     private static final String AUTH_STATE_KEY = "authState";
+    private static final String LAST_SUCCESS_KEY = "lastSuccess";
 
     public static final ZoneId ION_TIME_ZONE = ZoneId.of("America/New_York");
 
@@ -64,6 +66,11 @@ public class IonApi {
             }
         }
         authState = new AuthState();
+    }
+
+    public @NonNull
+    String getLastSuccess() {
+        return preferences.getString(LAST_SUCCESS_KEY, "null");
     }
 
     public boolean isAuthorized() {
@@ -101,6 +108,8 @@ public class IonApi {
     public void performActionWithFreshTokens(@NonNull AuthorizationService authService, @NonNull AuthState.AuthStateAction action) {
         authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
             editAuthState(); // ENSURE SAVED STATE IS UP-TO-DATE
+            if (authState.isAuthorized() && authState.getAuthorizationException() == null)
+                preferences.edit().putString(LAST_SUCCESS_KEY, LocalDateTime.now().toString()).apply();
             action.execute(accessToken, idToken, ex);
         });
     }

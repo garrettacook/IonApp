@@ -128,6 +128,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button authStateButton = findViewById(R.id.authStateButton);
         authStateButton.setOnClickListener(view -> Snackbar.make(view, IonApi.getInstance(this).asJson(), 5000).show());
+
+        Button debugButton = findViewById(R.id.debugButton);
+        debugButton.setOnClickListener(view -> Snackbar.make(view, IonApi.getInstance(this).getLastSuccess(), 3000).show());
     }
 
     @Override

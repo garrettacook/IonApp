@@ -100,6 +100,11 @@ public class IonApi {
         return authState.getAuthorizationException();
     }
 
+    public void setNeedsTokenRefresh(boolean needsTokenRefresh) {
+        authState.setNeedsTokenRefresh(needsTokenRefresh);
+        editAuthState();
+    }
+
     public @NonNull
     String asJson() {
         return authState.jsonSerializeString();

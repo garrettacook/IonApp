@@ -14,4 +14,6 @@
     <string name="begin_checking">Begin Checking</string>
     <string name="cancel">Cancel</string>
     <string name="reset_workers">Reset Workers</string>
+    <string name="activity_location">Go to %s</string>
+    <string name="eighth_channel_name">Eighth Period Reminders</string>
 </resources>

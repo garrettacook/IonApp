@@ -51,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
                 Notifications.TEST_CHANNEL_ID, "Tests",
                 NotificationManager.IMPORTANCE_LOW);
         notificationManager.createNotificationChannel(testChannel);
+        NotificationChannel eighthChannel = new NotificationChannel(
+                Notifications.EIGHTH_CHANNEL_ID, getString(R.string.eighth_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager.createNotificationChannel(eighthChannel);
 
         PeriodicWorkRequest checkScheduleRequest = new
                 PeriodicWorkRequest.Builder(CheckScheduleWorker.class, 1, TimeUnit.HOURS)

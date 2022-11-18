@@ -14,8 +14,10 @@ import net.openid.appauth.AuthorizationService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import me.garrett.ionapp.EighthTransitionReceiver;
 import me.garrett.ionapp.Notifications;
 import me.garrett.ionapp.StartFindBusWorkerReceiver;
 
@@ -42,14 +44,30 @@ public class CheckScheduleWorker extends Worker {
             if (checkTime.isBefore(Instant.now()))
                 return Result.success();
 
-            Log.d("IonApp", "Scheduling alarm for " + checkTime);
-            Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
             AlarmManager alarmManager = getApplicationContext().getSystemService(AlarmManager.class);
-            alarmManager.cancel(pendingIntent); // avoid duplicate alarms
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, checkTime.toEpochMilli(), pendingIntent);
-            Notifications.sendStatusNotification(getApplicationContext(), "Scheduled alarm for " + checkTime);
+
+            {
+                Log.d("IonApp", "Scheduling alarm for " + checkTime);
+                Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerReceiver.class);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+                alarmManager.cancel(pendingIntent); // avoid duplicate alarms
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, checkTime.toEpochMilli(), pendingIntent);
+                Notifications.sendStatusNotification(getApplicationContext(), "Scheduled alarm for " + checkTime);
+            }
+
+            for (Map.Entry<Character, Instant> entry : schedule.getEighthTransitionTimes().entrySet()) {
+                char block = entry.getKey();
+                Instant instant = entry.getValue();
+                String date = instant.atZone(IonApi.ION_TIME_ZONE).format(IonApi.DATE_FORMAT);
+
+                Intent intent = EighthTransitionReceiver.createIntent(getApplicationContext(), date, block);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+                alarmManager.cancel(pendingIntent); // avoid duplicate alarms
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
+            }
+
             return Result.success();
 
         } catch (ExecutionException | InterruptedException e) {

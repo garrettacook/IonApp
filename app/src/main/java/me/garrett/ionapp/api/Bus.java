@@ -66,6 +66,11 @@ public class Bus {
     }
 
     public static @NonNull
+    List<Bus> listFromRawJson(@NonNull String json) throws JSONException {
+        return listFromJson(new JSONObject(json).getJSONArray("results"));
+    }
+
+    public static @NonNull
     List<Bus> listFromJson(@NonNull JSONArray jsonArray) throws JSONException {
         List<Bus> list = new ArrayList<>(jsonArray.length());
         for (int i = 0; i < jsonArray.length(); i++)

@@ -10,24 +10,16 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.SignStyle;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Schedule {
 
     public static class Block {
-
-        private static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE)
-                .appendLiteral(':')
-                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-                .toFormatter(Locale.ENGLISH);
 
         private final @NonNull
         String name;
@@ -43,8 +35,8 @@ public class Schedule {
         public static @NonNull
         Block fromJson(@NonNull JSONObject json) throws JSONException {
             String name = json.getString("name");
-            LocalTime start = LocalTime.parse(json.getString("start"), TIME_FORMAT);
-            LocalTime end = LocalTime.parse(json.getString("end"), TIME_FORMAT);
+            LocalTime start = LocalTime.parse(json.getString("start"), IonApi.TIME_FORMAT);
+            LocalTime end = LocalTime.parse(json.getString("end"), IonApi.TIME_FORMAT);
             return new Block(name, start, end);
         }
 
@@ -78,6 +70,11 @@ public class Schedule {
         this.name = name;
         this.special = special;
         this.blocks = blocks;
+    }
+
+    public static @NonNull
+    Schedule fromRawJson(@NonNull String json) throws JSONException {
+        return fromJson(new JSONObject(json));
     }
 
     public static @NonNull
@@ -117,6 +114,29 @@ public class Schedule {
     @NonNull
     public List<Block> getBlocks() {
         return Collections.unmodifiableList(blocks);
+    }
+
+    @NonNull
+    public Map<Character, Block> getEighthBlocks() {
+        return blocks.stream().filter(b -> b.getName().charAt(0) == '8')
+                .collect(Collectors.toMap(b -> b.getName().charAt(1), b -> b));
+    }
+
+    @NonNull
+    public Map<Character, Instant> getEighthTransitionTimes() {
+        Map<Character, Instant> map = new HashMap<>();
+
+        LocalTime lastEndTime = null;
+        for (Block block : blocks) {
+            if (block.getName().charAt(0) == '8') {
+                if (lastEndTime == null)
+                    lastEndTime = block.getStart().minusMinutes(10);
+                map.put(block.getName().charAt(1), ZonedDateTime.of(date, lastEndTime, IonApi.ION_TIME_ZONE).toInstant());
+            }
+            lastEndTime = block.getEnd();
+        }
+
+        return map;
     }
 
     public @NonNull

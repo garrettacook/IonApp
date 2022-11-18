@@ -19,6 +19,10 @@
         <receiver
             android:name=".StartFindBusWorkerReceiver"
             android:enabled="true" />
+        <receiver
+            android:name=".EighthTransitionReceiver"
+            android:enabled="true" />
+
         <activity
             android:name=".LoginActivity"
             android:exported="false" />

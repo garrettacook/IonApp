@@ -13,6 +13,8 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.TokenResponse;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,7 +23,12 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
+import java.time.temporal.ChronoField;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -37,6 +44,18 @@ public class IonApi {
     private static final String LAST_SUCCESS_KEY = "lastSuccess";
 
     public static final ZoneId ION_TIME_ZONE = ZoneId.of("America/New_York");
+    public static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
+            .appendValue(ChronoField.HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE)
+            .appendLiteral(':')
+            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+            .toFormatter(Locale.ENGLISH);
+    public static final DateTimeFormatter DATE_FORMAT = new DateTimeFormatterBuilder()
+            .appendValue(ChronoField.YEAR, 4)
+            .appendLiteral('-')
+            .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+            .appendLiteral('-')
+            .appendValue(ChronoField.DAY_OF_MONTH, 2)
+            .toFormatter(Locale.ENGLISH);
 
     private static @Nullable
     IonApi instance;
@@ -147,11 +166,11 @@ public class IonApi {
     }
 
     public @NonNull
-    <T> CompletableFuture<T> get(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<JSONObject, T> function) {
+    <T> CompletableFuture<T> get(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<String, T> function) {
         return connect(authService, endPoint, conn -> {
             if (conn.getResponseCode() == 200) {
                 String jsonString = IonUtils.readString(conn.getInputStream());
-                return function.apply(new JSONObject(jsonString));
+                return function.apply(jsonString);
             } else {
                 throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
             }
@@ -160,12 +179,12 @@ public class IonApi {
 
     public @NonNull
     CompletableFuture<Schedule> getSchedule(@NonNull AuthorizationService authService, @NonNull Instant instant) {
-        return get(authService, String.format("schedule/%tF", instant.atZone(ION_TIME_ZONE)), Schedule::fromJson);
+        return get(authService, String.format("schedule/%tF", instant.atZone(ION_TIME_ZONE)), Schedule::fromRawJson);
     }
 
     public @NonNull
     CompletableFuture<List<Bus>> getBusList(@NonNull AuthorizationService authService) {
-        return get(authService, "bus", json -> Bus.listFromJson(json.getJSONArray("results")));
+        return get(authService, "bus", Bus::listFromRawJson);
     }
 
     public @NonNull
@@ -181,6 +200,64 @@ public class IonApi {
                 }
             }
             return Optional.empty();
+        });
+    }
+
+    public @NonNull
+    CompletableFuture<JSONArray> getSignups(@NonNull AuthorizationService authService) {
+        return get(authService, "signups/user", JSONArray::new);
+    }
+
+    public @NotNull
+    CompletableFuture<Optional<Signup>> getSignup(@NonNull AuthorizationService authService, @NonNull String date, char block) {
+        return getSignups(authService).thenComposeAsync(signupsJsonArray -> {
+            try {
+
+                for (int i = 0; i < signupsJsonArray.length(); i++) {
+                    JSONObject signupJson = signupsJsonArray.getJSONObject(i);
+
+                    JSONObject blockJson = signupJson.getJSONObject("block");
+                    if (blockJson.getString("date").equals(date) && blockJson.getString("block_letter").charAt(0) == block) {
+
+                        Signup signup = new Signup(blockJson.getInt("id"), signupJson.getJSONObject("activity").getInt("id"));
+                        return CompletableFuture.completedFuture(Optional.of(signup));
+
+                    }
+
+                }
+                return CompletableFuture.completedFuture(Optional.empty());
+
+            } catch (JSONException e) {
+                CompletableFuture<Optional<Signup>> future = new CompletableFuture<>();
+                future.completeExceptionally(e);
+                return future;
+            }
+        });
+    }
+
+    public @NonNull
+    CompletableFuture<JSONObject> getBlockDetails(@NonNull AuthorizationService authService, int blockId) {
+        return get(authService, String.format(Locale.ROOT, "blocks/%d", blockId), JSONObject::new);
+    }
+
+    public @NonNull
+    CompletableFuture<JSONObject> getScheduledActivityDetails(@NonNull AuthorizationService authService, @NonNull Signup signup) {
+        return getScheduledActivityDetails(authService, signup.getBlockId(), signup.getActivityId());
+    }
+
+    public @NonNull
+    CompletableFuture<JSONObject> getScheduledActivityDetails(@NonNull AuthorizationService authService, int blockId, int activityId) {
+        return getBlockDetails(authService, blockId).thenComposeAsync(json -> {
+            try {
+
+                JSONObject activityJson = json.getJSONObject("activities").getJSONObject(String.valueOf(activityId));
+                return CompletableFuture.completedFuture(activityJson);
+
+            } catch (JSONException e) {
+                CompletableFuture<JSONObject> future = new CompletableFuture<>();
+                future.completeExceptionally(e);
+                return future;
+            }
         });
     }
 

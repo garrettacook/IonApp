@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -23,8 +24,15 @@ import me.garrett.ionapp.StartFindBusWorkerReceiver;
 
 public class CheckScheduleWorker extends Worker {
 
+    private static final String HISTORY_FILE = "me.garrett.ionapp.CHECK_HISTORY",
+            LAST_SCHEDULE_DATE_KEY = "lastScheduleDate";
+
     public CheckScheduleWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+    }
+
+    public static boolean clearHistory(@NonNull Context context) {
+        return context.deleteSharedPreferences(HISTORY_FILE);
     }
 
     @Override
@@ -56,16 +64,22 @@ public class CheckScheduleWorker extends Worker {
                 Notifications.sendStatusNotification(getApplicationContext(), "Scheduled alarm for " + checkTime);
             }
 
-            for (Map.Entry<Character, Instant> entry : schedule.getEighthTransitionTimes().entrySet()) {
-                char block = entry.getKey();
-                Instant instant = entry.getValue();
-                String date = instant.atZone(IonApi.ION_TIME_ZONE).format(IonApi.DATE_FORMAT);
+            String date = schedule.getDate().format(IonApi.DATE_FORMAT);
+            SharedPreferences history = getApplicationContext().getSharedPreferences(HISTORY_FILE, Context.MODE_PRIVATE);
+            if (!date.equals(history.getString(LAST_SCHEDULE_DATE_KEY, null))) {
 
-                Intent intent = EighthTransitionReceiver.createIntent(getApplicationContext(), date, block);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+                for (Map.Entry<Character, Instant> entry : schedule.getEighthTransitionTimes().entrySet()) {
+                    char block = entry.getKey();
+                    Instant instant = entry.getValue();
 
-                alarmManager.cancel(pendingIntent); // avoid duplicate alarms
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
+                    Intent intent = EighthTransitionReceiver.createIntent(getApplicationContext(), date, block);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), block, intent, PendingIntent.FLAG_IMMUTABLE);
+
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
+                    Log.d("IonApp", "Scheduled " + block + " block alarm for " + instant);
+                }
+
+                history.edit().putString(LAST_SCHEDULE_DATE_KEY, date).apply();
             }
 
             return Result.success();

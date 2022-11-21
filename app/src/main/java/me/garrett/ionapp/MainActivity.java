@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button debugButton = findViewById(R.id.debugButton);
         debugButton.setOnClickListener(view -> IonApi.getInstance(this).setNeedsTokenRefresh(true));
+
+        Button resetHistoryButton = findViewById(R.id.resetHistoryButton);
+        resetHistoryButton.setOnClickListener(view -> CheckScheduleWorker.clearHistory(this));
     }
 
     @Override

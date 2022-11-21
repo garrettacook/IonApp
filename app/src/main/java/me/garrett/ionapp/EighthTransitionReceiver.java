@@ -3,6 +3,7 @@ package me.garrett.ionapp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
@@ -50,6 +51,7 @@ public class EighthTransitionReceiver extends BroadcastReceiver {
         if (block == ' ')
             throw new IllegalArgumentException("Block extra not set");
 
+        Log.d("IonApp", "Checking signup for " + block + " block...");
         checkSignup(context, date, block);
 
     }

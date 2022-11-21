@@ -97,4 +97,13 @@
         android:text="Debug"
         app:layout_constraintStart_toStartOf="@+id/authStateButton"
         app:layout_constraintTop_toBottomOf="@+id/authStateButton" />
+
+    <Button
+        android:id="@+id/resetHistoryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Reset History"
+        app:layout_constraintStart_toStartOf="@+id/debugButton"
+        app:layout_constraintTop_toBottomOf="@+id/debugButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

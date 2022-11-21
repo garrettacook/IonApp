@@ -128,6 +128,9 @@ public class Schedule {
 
         LocalTime lastEndTime = null;
         for (Block block : blocks) {
+            if (block.getName().equals("Break")) // skip "breaks" since they mean nothing
+                continue;
+
             if (block.getName().charAt(0) == '8') {
                 if (lastEndTime == null)
                     lastEndTime = block.getStart().minusMinutes(10);

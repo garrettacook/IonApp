@@ -15,7 +15,8 @@
         android:spinnerMode="dialog"
         app:layout_constraintBottom_toBottomOf="@+id/busSpinnerLabel"
         app:layout_constraintStart_toEndOf="@+id/busSpinnerLabel"
-        app:layout_constraintTop_toTopOf="@+id/busSpinnerLabel" />
+        app:layout_constraintTop_toTopOf="@+id/busSpinnerLabel"
+        tools:ignore="DuplicateSpeakableTextCheck" />
 
     <TextView
         android:id="@+id/busSpinnerLabel"
@@ -81,29 +82,42 @@
         app:layout_constraintTop_toBottomOf="@+id/cancelButton" />
 
     <Button
-        android:id="@+id/authStateButton"
+        android:id="@+id/forceRefreshButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Show Auth State"
+        android:text="@string/force_token_refresh"
         app:layout_constraintStart_toStartOf="@+id/resetWorkersButton"
         app:layout_constraintTop_toBottomOf="@+id/resetWorkersButton" />
-
-    <Button
-        android:id="@+id/debugButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Debug"
-        app:layout_constraintStart_toStartOf="@+id/authStateButton"
-        app:layout_constraintTop_toBottomOf="@+id/authStateButton" />
 
     <Button
         android:id="@+id/resetHistoryButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Reset History"
-        app:layout_constraintStart_toStartOf="@+id/debugButton"
-        app:layout_constraintTop_toBottomOf="@+id/debugButton" />
+        android:layout_marginStart="20dp"
+        android:text="@string/reset_history"
+        app:layout_constraintStart_toEndOf="@+id/resetWorkersButton"
+        app:layout_constraintTop_toTopOf="@+id/resetWorkersButton" />
+
+    <TextView
+        android:id="@+id/authStateAccessTokenView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:layout_constraintStart_toStartOf="@+id/forceRefreshButton"
+        app:layout_constraintTop_toBottomOf="@+id/forceRefreshButton" />
+
+    <TextView
+        android:id="@+id/authStateRefreshTokenView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/authStateAccessTokenView"
+        app:layout_constraintTop_toBottomOf="@+id/authStateAccessTokenView" />
+
+    <TextView
+        android:id="@+id/authStateExpiresAtView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/authStateRefreshTokenView"
+        app:layout_constraintTop_toBottomOf="@+id/authStateRefreshTokenView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

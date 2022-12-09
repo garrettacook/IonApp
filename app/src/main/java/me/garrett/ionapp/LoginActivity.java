@@ -1,9 +1,11 @@
 package me.garrett.ionapp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -19,6 +21,9 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenRequest;
+
+import java.time.Instant;
+import java.util.Optional;
 
 import me.garrett.ionapp.api.IonApi;
 
@@ -40,8 +45,18 @@ public class LoginActivity extends AppCompatActivity {
         Button loginButton = findViewById(R.id.loginButton);
         loginButton.setOnClickListener(view -> authorize());
 
-        Button debugButton = findViewById(R.id.debugButtonLogin);
-        debugButton.setOnClickListener(view -> Snackbar.make(view, IonApi.getInstance(this).getLastSuccess(), 3000).show());
+        updateAuthStateTextView();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void updateAuthStateTextView() {
+        IonApi api = IonApi.getInstance(this);
+
+        TextView authStateView = findViewById(R.id.loginAuthStateView);
+
+        authStateView.setText(api.getAccessToken() + "\n"
+                + api.getRefreshToken() + "\n"
+                + Optional.ofNullable(api.getAccessTokenExpirationTime()).map(Instant::ofEpochMilli).map(Instant::toString).orElse("null"));
     }
 
     @Override

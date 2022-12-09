@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import me.garrett.ionapp.EighthTransitionReceiver;
 import me.garrett.ionapp.Notifications;
@@ -61,14 +62,14 @@ public class CheckScheduleWorker extends Worker {
 
                 alarmManager.cancel(pendingIntent); // avoid duplicate alarms
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, checkTime.toEpochMilli(), pendingIntent);
-                Notifications.sendStatusNotification(getApplicationContext(), "Scheduled alarm for " + checkTime);
             }
 
             String date = schedule.getDate().format(IonApi.DATE_FORMAT);
             SharedPreferences history = getApplicationContext().getSharedPreferences(HISTORY_FILE, Context.MODE_PRIVATE);
             if (!date.equals(history.getString(LAST_SCHEDULE_DATE_KEY, null))) {
 
-                for (Map.Entry<Character, Instant> entry : schedule.getEighthTransitionTimes().entrySet()) {
+                Map<Character, Instant> transitionTimes = schedule.getEighthTransitionTimes();
+                for (Map.Entry<Character, Instant> entry : transitionTimes.entrySet()) {
                     char block = entry.getKey();
                     Instant instant = entry.getValue();
 
@@ -78,6 +79,11 @@ public class CheckScheduleWorker extends Worker {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
                     Log.d("IonApp", "Scheduled " + block + " block alarm for " + instant);
                 }
+
+                Notifications.sendStatusNotification(getApplicationContext(),
+                        "Scheduled alarms for blocks: " +
+                                transitionTimes.keySet().stream().map(Object::toString).collect(Collectors.joining(", "))
+                );
 
                 history.edit().putString(LAST_SCHEDULE_DATE_KEY, date).apply();
             }

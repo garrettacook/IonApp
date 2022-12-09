@@ -16,4 +16,6 @@
     <string name="reset_workers">Reset Workers</string>
     <string name="activity_location">Go to %s</string>
     <string name="eighth_channel_name">Eighth Period Reminders</string>
+    <string name="reset_history">Reset History</string>
+    <string name="force_token_refresh">Force Token Refresh</string>
 </resources>

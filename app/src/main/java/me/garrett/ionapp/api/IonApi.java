@@ -1,6 +1,7 @@
 package me.garrett.ionapp.api;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -42,6 +43,7 @@ public class IonApi {
     private static final String AUTH_STATE_FILE = "me.garrett.ionapp.AUTH_STATE";
     private static final String AUTH_STATE_KEY = "authState";
     private static final String LAST_SUCCESS_KEY = "lastSuccess";
+    public static final String AUTH_STATE_UPDATE = "me.garrett.ionapp.AUTH_STATE_UPDATE";
 
     public static final ZoneId ION_TIME_ZONE = ZoneId.of("America/New_York");
     public static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
@@ -68,11 +70,14 @@ public class IonApi {
     }
 
     private final @NonNull
+    Context context;
+    private final @NonNull
     SharedPreferences preferences;
     private @NonNull
     AuthState authState;
 
     private IonApi(@NonNull Context context) {
+        this.context = context.getApplicationContext();
         preferences = context.getSharedPreferences(AUTH_STATE_FILE, Context.MODE_PRIVATE);
         String authStateString = preferences.getString(AUTH_STATE_KEY, null);
         if (authStateString != null) {
@@ -102,6 +107,7 @@ public class IonApi {
 
     private void editAuthState() {
         preferences.edit().putString(AUTH_STATE_KEY, authState.jsonSerializeString()).apply();
+        context.sendBroadcast(new Intent(AUTH_STATE_UPDATE));
     }
 
     public void update(@Nullable AuthorizationResponse authResponse, @Nullable AuthorizationException authException) {
@@ -117,6 +123,21 @@ public class IonApi {
     public @Nullable
     AuthorizationException getAuthorizationException() {
         return authState.getAuthorizationException();
+    }
+
+    @Nullable
+    public String getRefreshToken() {
+        return authState.getRefreshToken();
+    }
+
+    @Nullable
+    public String getAccessToken() {
+        return authState.getAccessToken();
+    }
+
+    @Nullable
+    public Long getAccessTokenExpirationTime() {
+        return authState.getAccessTokenExpirationTime();
     }
 
     public void setNeedsTokenRefresh(boolean needsTokenRefresh) {

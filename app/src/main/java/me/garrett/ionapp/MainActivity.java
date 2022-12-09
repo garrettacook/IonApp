@@ -2,8 +2,12 @@ package me.garrett.ionapp;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +27,8 @@ import com.google.android.material.snackbar.Snackbar;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationService;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -130,11 +136,8 @@ public class MainActivity extends AppCompatActivity {
         resetWorkersButton.setOnClickListener(view ->
                 WorkManager.getInstance(this).cancelUniqueWork(CHECK_SCHEDULE_UNIQUE_WORK_NAME));
 
-        Button authStateButton = findViewById(R.id.authStateButton);
-        authStateButton.setOnClickListener(view -> Snackbar.make(view, IonApi.getInstance(this).asJson(), 5000).show());
-
-        Button debugButton = findViewById(R.id.debugButton);
-        debugButton.setOnClickListener(view -> IonApi.getInstance(this).setNeedsTokenRefresh(true));
+        Button forceRefreshButton = findViewById(R.id.forceRefreshButton);
+        forceRefreshButton.setOnClickListener(view -> IonApi.getInstance(this).setNeedsTokenRefresh(true));
 
         Button resetHistoryButton = findViewById(R.id.resetHistoryButton);
         resetHistoryButton.setOnClickListener(view -> CheckScheduleWorker.clearHistory(this));
@@ -145,6 +148,41 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
         authService.dispose();
+    }
+
+    private void updateAuthStateTextView() {
+        IonApi api = IonApi.getInstance(this);
+
+        TextView authStateAccessTokenView = findViewById(R.id.authStateAccessTokenView);
+        TextView authStateRefreshTokenView = findViewById(R.id.authStateRefreshTokenView);
+        TextView authStateExpiresAtView = findViewById(R.id.authStateExpiresAtView);
+
+        authStateAccessTokenView.setText(api.getAccessToken());
+        authStateRefreshTokenView.setText(api.getRefreshToken());
+        authStateExpiresAtView.setText(Optional.ofNullable(api.getAccessTokenExpirationTime()).map(Instant::ofEpochMilli).map(Instant::toString).orElse("null"));
+    }
+
+    private BroadcastReceiver authStateUpdateReceiver;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MainActivity", "onResume called");
+        updateAuthStateTextView();
+        authStateUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateAuthStateTextView();
+            }
+        };
+        registerReceiver(authStateUpdateReceiver, new IntentFilter(IonApi.AUTH_STATE_UPDATE));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(authStateUpdateReceiver);
+        authStateUpdateReceiver = null;
     }
 
     private void onFindBusClick(View view) {

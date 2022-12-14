@@ -92,7 +92,7 @@ public class CheckScheduleWorker extends Worker {
 
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
-            Notifications.sendStatusNotification(getApplicationContext(), "Failed to check schedule");
+            Notifications.sendStatusNotification(getApplicationContext(), e.getClass().getSimpleName() + ": " + e.getMessage());
             return Result.retry();
         }
     }

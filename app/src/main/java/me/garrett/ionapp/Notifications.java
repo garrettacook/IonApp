@@ -24,7 +24,7 @@ public final class Notifications {
         NotificationManagerCompat.from(context).notify(Notifications.BUS_NOTIFICATION_ID, builder.build());
     }
 
-    public static void sendStatusNotification(@NonNull Context context, @NonNull String status) {
+    public static void sendStatusNotification(@NonNull Context context, String status) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Notifications.TEST_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("IonApp Status")

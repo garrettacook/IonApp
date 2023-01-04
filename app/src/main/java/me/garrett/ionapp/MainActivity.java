@@ -1,11 +1,14 @@
 package me.garrett.ionapp;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -15,6 +18,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
@@ -48,14 +52,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
+
         NotificationChannel busChannel = new NotificationChannel(
                 Notifications.BUS_CHANNEL_ID, getString(R.string.bus_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT);
         notificationManager.createNotificationChannel(busChannel);
+
         NotificationChannel testChannel = new NotificationChannel(
                 Notifications.TEST_CHANNEL_ID, "Tests",
                 NotificationManager.IMPORTANCE_LOW);
         notificationManager.createNotificationChannel(testChannel);
+
         NotificationChannel eighthChannel = new NotificationChannel(
                 Notifications.EIGHTH_CHANNEL_ID, getString(R.string.eighth_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT);
@@ -74,8 +81,21 @@ public class MainActivity extends AppCompatActivity {
                 checkScheduleRequest);
 
         // redirect to login activity if not authorized
-        if (!IonApi.getInstance(this).isAuthorized())
+        if (!IonApi.getInstance(this).isAuthorized()) {
             startActivity(new Intent(this, LoginActivity.class));
+            return;
+        }
+
+        // Explicit permission request for notifications required on API level 33 or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
+
+            }
+
+        }
 
         authService = new AuthorizationService(this);
 

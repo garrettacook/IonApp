@@ -100,7 +100,7 @@ public class EighthTransitionReceiver extends BroadcastReceiver {
                 if (signup.isPresent()) {
 
                     JSONObject json = api.getScheduledActivityDetails(authService, signup.get()).get();
-                    String activity = json.getString("name");
+                    String activity = json.getString("name_with_flags_for_user");
 
                     JSONArray roomsArray = json.getJSONArray("rooms");
                     List<String> rooms = new ArrayList<>(roomsArray.length());

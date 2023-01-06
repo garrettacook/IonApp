@@ -140,6 +140,10 @@ public class IonApi {
         return authState.getAccessTokenExpirationTime();
     }
 
+    public boolean getNeedsTokenRefresh() {
+        return authState.getNeedsTokenRefresh();
+    }
+
     public void setNeedsTokenRefresh(boolean needsTokenRefresh) {
         authState.setNeedsTokenRefresh(needsTokenRefresh);
         editAuthState();

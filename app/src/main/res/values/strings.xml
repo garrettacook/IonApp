@@ -18,4 +18,5 @@
     <string name="eighth_channel_name">Eighth Period Reminders</string>
     <string name="reset_history">Reset History</string>
     <string name="force_token_refresh">Force Token Refresh</string>
+    <string name="test">Test</string>
 </resources>

@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -160,6 +161,12 @@ public class MainActivity extends AppCompatActivity {
 
         Button resetHistoryButton = findViewById(R.id.resetHistoryButton);
         resetHistoryButton.setOnClickListener(view -> CheckScheduleWorker.clearHistory(this));
+
+        Button testButton = findViewById(R.id.testButton);
+        testButton.setOnClickListener(view -> {
+            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(CheckScheduleWorker.class).build();
+            WorkManager.getInstance(this).enqueue(request);
+        });
     }
 
     @Override
@@ -175,10 +182,12 @@ public class MainActivity extends AppCompatActivity {
         TextView authStateAccessTokenView = findViewById(R.id.authStateAccessTokenView);
         TextView authStateRefreshTokenView = findViewById(R.id.authStateRefreshTokenView);
         TextView authStateExpiresAtView = findViewById(R.id.authStateExpiresAtView);
+        TextView authStateRefreshView = findViewById(R.id.authStateRefreshView);
 
         authStateAccessTokenView.setText(api.getAccessToken());
         authStateRefreshTokenView.setText(api.getRefreshToken());
         authStateExpiresAtView.setText(Optional.ofNullable(api.getAccessTokenExpirationTime()).map(Instant::ofEpochMilli).map(Instant::toString).orElse("null"));
+        authStateRefreshView.setText(String.valueOf(api.getNeedsTokenRefresh()));
     }
 
     private BroadcastReceiver authStateUpdateReceiver;

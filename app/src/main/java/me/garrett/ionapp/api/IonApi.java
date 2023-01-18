@@ -208,6 +208,11 @@ public class IonApi {
     }
 
     public @NonNull
+    CompletableFuture<List<Announcement>> getAnnouncements(@NonNull AuthorizationService authService, int page) {
+        return get(authService, String.format(Locale.ROOT, "announcements?page=%d", page), Announcement::listFromRawJson);
+    }
+
+    public @NonNull
     CompletableFuture<List<Bus>> getBusList(@NonNull AuthorizationService authService) {
         return get(authService, "bus", Bus::listFromRawJson);
     }

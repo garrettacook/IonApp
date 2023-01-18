@@ -26,7 +26,8 @@ import me.garrett.ionapp.StartFindBusWorkerReceiver;
 public class CheckScheduleWorker extends Worker {
 
     private static final String HISTORY_FILE = "me.garrett.ionapp.CHECK_HISTORY",
-            LAST_SCHEDULE_DATE_KEY = "lastScheduleDate";
+            LAST_SCHEDULE_DATE_KEY = "lastScheduleDate",
+            LAST_CHECK_TIME = "lastCheckTime";
 
     public CheckScheduleWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -87,6 +88,20 @@ public class CheckScheduleWorker extends Worker {
 
                 history.edit().putString(LAST_SCHEDULE_DATE_KEY, date).apply();
             }
+
+            String lastCheckTimeString = history.getString(LAST_CHECK_TIME, null);
+            Instant lastCheckTime = lastCheckTimeString == null ? null : Instant.parse(lastCheckTimeString);
+
+            if (lastCheckTime != null) {
+                for (Announcement announcement : api.getAnnouncements(authService, 1).get()) {
+                    if (announcement.getAdded().isAfter(lastCheckTime)) {
+                        Notifications.sendAnnouncementNotification(getApplicationContext(), announcement);
+                    } else if (!announcement.isPinned()) {
+                        break;
+                    }
+                }
+            }
+            history.edit().putString(LAST_CHECK_TIME, Instant.now().toString()).apply();
 
             return Result.success();
 

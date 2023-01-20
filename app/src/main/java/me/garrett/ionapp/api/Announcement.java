@@ -1,6 +1,9 @@
 package me.garrett.ionapp.api;
 
+import android.text.Spanned;
+
 import androidx.annotation.NonNull;
+import androidx.core.text.HtmlCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,8 +81,13 @@ public class Announcement {
     }
 
     @NonNull
-    public String getContent() {
+    public String getRawContent() {
         return content;
+    }
+
+    @NonNull
+    public Spanned getContent() {
+        return HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY);
     }
 
     @NonNull

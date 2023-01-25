@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import me.garrett.ionapp.DebugUtils;
 import me.garrett.ionapp.EighthTransitionReceiver;
 import me.garrett.ionapp.Notifications;
 import me.garrett.ionapp.StartFindBusWorkerReceiver;
@@ -107,6 +108,7 @@ public class CheckScheduleWorker extends Worker {
 
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
+            DebugUtils.writeLine(getApplicationContext(), "authlog.txt", "Check Failure: " + e);
             Notifications.sendStatusNotification(getApplicationContext(), e.getClass().getSimpleName() + ": " + e.getMessage());
             return Result.retry();
         }

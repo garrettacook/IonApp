@@ -22,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -169,8 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button testButton = findViewById(R.id.testButton);
         testButton.setOnClickListener(view -> {
-            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(CheckScheduleWorker.class).build();
-            WorkManager.getInstance(this).enqueue(request);
+            DebugUtils.writeLine(this, "authlog.txt", "Test button pressed");
         });
     }
 

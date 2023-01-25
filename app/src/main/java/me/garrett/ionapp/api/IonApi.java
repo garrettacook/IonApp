@@ -36,6 +36,7 @@ import java.util.concurrent.ForkJoinPool;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import me.garrett.ionapp.DebugUtils;
 import me.garrett.ionapp.IonUtils;
 
 public class IonApi {
@@ -106,7 +107,9 @@ public class IonApi {
     }
 
     private void editAuthState() {
-        preferences.edit().putString(AUTH_STATE_KEY, authState.jsonSerializeString()).apply();
+        String json = authState.jsonSerializeString();
+        preferences.edit().putString(AUTH_STATE_KEY, json).apply();
+        DebugUtils.writeLine(context, "authlog.txt", "New AuthState: " + json);
         context.sendBroadcast(new Intent(AUTH_STATE_UPDATE));
     }
 

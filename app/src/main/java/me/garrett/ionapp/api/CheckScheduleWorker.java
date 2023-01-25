@@ -13,6 +13,8 @@ import androidx.work.WorkerParameters;
 
 import net.openid.appauth.AuthorizationService;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -108,7 +110,14 @@ public class CheckScheduleWorker extends Worker {
 
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
+
             DebugUtils.writeLine(getApplicationContext(), "authlog.txt", "Check Failure: " + e);
+            try (PrintWriter writer = DebugUtils.getPrintWriter(getApplicationContext(), "authlog.txt", true)) {
+                e.printStackTrace(writer);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
             Notifications.sendStatusNotification(getApplicationContext(), e.getClass().getSimpleName() + ": " + e.getMessage());
             return Result.retry();
         }

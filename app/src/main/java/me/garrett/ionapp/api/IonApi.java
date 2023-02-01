@@ -63,7 +63,7 @@ public class IonApi {
     private static @Nullable
     IonApi instance;
 
-    public static @NonNull
+    public static synchronized @NonNull
     IonApi getInstance(@NonNull Context context) {
         if (instance == null)
             instance = new IonApi(context);
@@ -84,6 +84,7 @@ public class IonApi {
         if (authStateString != null) {
             try {
                 authState = AuthState.jsonDeserialize(authStateString);
+                DebugUtils.writeLine(context, "authlog.txt", "Loaded AuthState: " + authStateString);
                 return;
             } catch (JSONException e) {
                 Log.w(getClass().getSimpleName(), "Failed to deserialize auth state string!");
@@ -173,6 +174,7 @@ public class IonApi {
 
     public @NonNull
     <T> CompletableFuture<T> connect(@NonNull AuthorizationService authService, @NonNull String endPoint, @NonNull IOFunction<HttpsURLConnection, T> function) {
+        DebugUtils.writeLine(context, "authlog.txt", "Connecting to endpoint: " + endPoint);
         CompletableFuture<T> future = new CompletableFuture<>();
         performActionWithFreshTokens(authService, (accessToken, idToken, ex) -> {
             if (accessToken != null) {

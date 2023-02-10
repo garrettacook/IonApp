@@ -41,7 +41,7 @@ import me.garrett.ionapp.api.CheckScheduleWorker;
 import me.garrett.ionapp.api.FindBusWorker;
 import me.garrett.ionapp.api.IonApi;
 
-public class MainActivity extends AppCompatActivity {
+public class TestActivity extends AppCompatActivity {
 
     private static final String CHECK_SCHEDULE_UNIQUE_WORK_NAME = "CheckIonSchedule";
 
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_test);
 
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
 
@@ -127,13 +127,13 @@ public class MainActivity extends AppCompatActivity {
         busSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Settings.getPreferences(MainActivity.this).edit()
+                Settings.getPreferences(TestActivity.this).edit()
                         .putString(Settings.BUS_ROUTE_KEY, (String) busSpinner.getSelectedItem()).apply();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                Settings.getPreferences(MainActivity.this).edit().remove(Settings.BUS_ROUTE_KEY).apply();
+                Settings.getPreferences(TestActivity.this).edit().remove(Settings.BUS_ROUTE_KEY).apply();
             }
         });
 

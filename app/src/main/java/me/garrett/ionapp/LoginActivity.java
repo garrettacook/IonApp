@@ -100,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
         authService.performTokenRequest(tokenRequest, (response, exception) -> {
             IonApi.getInstance(this).update(response, exception);
             if (response != null) {
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(this, TestActivity.class));
             } else {
                 assert exception != null;
                 handleConnectionError(exception);

@@ -22,4 +22,12 @@
     <string name="announcements_channel_name">Announcements</string>
     <string name="not_signed_up">You are not signed up for %s block</string>
     <string name="signup_cancelled">%s was cancelled</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_bus">Bus</string>
+    <string name="title_schedule">Schedule</string>
+    <string name="title_eighth">Eighth</string>
+    <string name="title_announcements">Announcements</string>
 </resources>

@@ -16,6 +16,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IonTestApp"
         tools:targetApi="33">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".StartFindBusWorkerReceiver"
             android:enabled="true" />
@@ -32,11 +43,6 @@
         <activity
             android:name=".TestActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

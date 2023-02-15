@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_announcements">
+
+    <fragment
+        android:id="@+id/navigation_announcements"
+        android:name="me.garrett.ionapp.ui.announcements.AnnouncementsFragment"
+        android:label="@string/title_announcements"
+        tools:layout="@layout/fragment_announcements" />
+
+    <fragment
+        android:id="@+id/navigation_schedule"
+        android:name="me.garrett.ionapp.ui.schedule.ScheduleFragment"
+        android:label="@string/title_schedule"
+        tools:layout="@layout/fragment_schedule" />
+
+    <fragment
+        android:id="@+id/navigation_eighth"
+        android:name="me.garrett.ionapp.ui.eighth.EighthFragment"
+        android:label="@string/title_eighth"
+        tools:layout="@layout/fragment_eighth" />
+
+    <fragment
+        android:id="@+id/navigation_bus"
+        android:name="me.garrett.ionapp.ui.bus.BusFragment"
+        android:label="@string/title_bus"
+        tools:layout="@layout/fragment_bus" />
+
+</navigation>

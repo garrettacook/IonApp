@@ -1,5 +1,6 @@
 package me.garrett.ionapp.api;
 
+import android.os.Bundle;
 import android.text.Spanned;
 
 import androidx.annotation.NonNull;
@@ -69,6 +70,40 @@ public class Announcement {
         for (int i = 0; i < jsonArray.length(); i++)
             list.add(fromJson(jsonArray.getJSONObject(i)));
         return list;
+    }
+
+    public void putInBundle(@NonNull Bundle bundle) {
+        bundle.putInt("id", id);
+        bundle.putString("title", title);
+        bundle.putString("content", content);
+        bundle.putString("author", author);
+        bundle.putInt("user", user);
+        bundle.putSerializable("added", added);
+        bundle.putSerializable("updated", updated);
+        bundle.putIntegerArrayList("groups", new ArrayList<>(groups));
+        bundle.putBoolean("pinned", pinned);
+    }
+
+    public static @NonNull Announcement getFromBundle(@NonNull Bundle bundle) {
+        int id = bundle.getInt("id");
+        String title = bundle.getString("title");
+        String content = bundle.getString("content");
+        String author = bundle.getString("author");
+        int user = bundle.getInt("user");
+
+        Instant added, updated;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            added = bundle.getSerializable("added", Instant.class);
+            updated = bundle.getSerializable("updated", Instant.class);
+        } else {
+            added = (Instant) bundle.getSerializable("added");
+            updated = (Instant) bundle.getSerializable("updated");
+        }
+
+        Set<Integer> groups = new HashSet<>(bundle.getIntegerArrayList("groups"));
+        boolean pinned = bundle.getBoolean("pinned");
+
+        return new Announcement(id, title, content, author, user, added, updated, groups, pinned);
     }
 
     public int getId() {

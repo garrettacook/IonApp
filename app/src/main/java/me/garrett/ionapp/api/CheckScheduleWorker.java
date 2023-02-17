@@ -96,13 +96,7 @@ public class CheckScheduleWorker extends Worker {
             Instant lastCheckTime = lastCheckTimeString == null ? null : Instant.parse(lastCheckTimeString);
 
             if (lastCheckTime != null) {
-                for (Announcement announcement : api.getAnnouncements(authService, 1).get()) {
-                    if (announcement.getAdded().isAfter(lastCheckTime)) {
-                        Notifications.sendAnnouncementNotification(getApplicationContext(), announcement);
-                    } else if (!announcement.isPinned()) {
-                        break;
-                    }
-                }
+                checkAnnouncements(api, authService, lastCheckTime);
             }
             history.edit().putString(LAST_CHECK_TIME, Instant.now().toString()).apply();
 
@@ -120,6 +114,20 @@ public class CheckScheduleWorker extends Worker {
 
             Notifications.sendStatusNotification(getApplicationContext(), e.getClass().getSimpleName() + ": " + e.getMessage());
             return Result.retry();
+        }
+    }
+
+    private void checkAnnouncements(@NonNull IonApi api, @NonNull AuthorizationService authService, @NonNull Instant lastCheckTime) throws ExecutionException, InterruptedException {
+        int page = 1;
+        while (true) {
+            for (Announcement announcement : api.getAnnouncements(authService, page).get()) {
+                if (announcement.getAdded().isAfter(lastCheckTime)) {
+                    Notifications.sendAnnouncementNotification(getApplicationContext(), announcement);
+                } else if (!announcement.isPinned()) {
+                    return;
+                }
+            }
+            page++;
         }
     }
 

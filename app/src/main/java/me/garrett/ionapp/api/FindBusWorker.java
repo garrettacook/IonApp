@@ -31,7 +31,7 @@ public class FindBusWorker extends Worker {
 
     public FindBusWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-        this.timeout = 900000; // 15 minutes
+        this.timeout = 1200000; // 20 minutes
     }
 
     public static Operation start(@NonNull Context context) {

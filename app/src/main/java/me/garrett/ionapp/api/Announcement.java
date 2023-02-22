@@ -121,8 +121,9 @@ public class Announcement {
     }
 
     @NonNull
-    public Spanned getContent() {
-        return HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY);
+    public String getContent() {
+        Spanned spanned = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY);
+        return spanned.toString().trim();
     }
 
     @NonNull

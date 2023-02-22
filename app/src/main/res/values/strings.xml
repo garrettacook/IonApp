@@ -30,4 +30,6 @@
     <string name="title_schedule">Schedule</string>
     <string name="title_eighth">Eighth</string>
     <string name="title_announcements">Announcements</string>
+    <string name="author_prefix">by</string>
+    <string name="value_separator">•</string>
 </resources>

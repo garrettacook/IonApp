@@ -8,6 +8,10 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+
 import me.garrett.ionapp.api.Announcement;
 
 /**
@@ -55,8 +59,14 @@ public class AnnouncementFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_announcement, container, false);
 
-        ((TextView) root.findViewById(R.id.title)).setText(mAnnouncement.getTitle());
-        ((TextView) root.findViewById(R.id.content)).setText(mAnnouncement.getContent());
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter
+                .ofLocalizedDateTime(FormatStyle.SHORT)
+                .withZone(ZoneId.systemDefault());
+
+        ((TextView) root.findViewById(R.id.announcement_title)).setText(mAnnouncement.getTitle());
+        ((TextView) root.findViewById(R.id.announcement_author)).setText(mAnnouncement.getAuthor());
+        ((TextView) root.findViewById(R.id.announcement_time)).setText(dateTimeFormatter.format(mAnnouncement.getAdded()));
+        ((TextView) root.findViewById(R.id.announcement_content)).setText(mAnnouncement.getContent());
 
         return root;
     }

@@ -4,13 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
 
 import net.openid.appauth.AuthorizationService;
 
@@ -28,16 +26,11 @@ public class AnnouncementsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        AnnouncementsViewModel announcementsViewModel =
-                new ViewModelProvider(this).get(AnnouncementsViewModel.class);
 
         binding = FragmentAnnouncementsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         authService = new AuthorizationService(getContext());
-
-        final TextView textView = binding.textAnnouncements;
-        announcementsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         IonApi.getInstance(getContext()).getAnnouncements(authService, 1).thenAccept(announcements -> {
 

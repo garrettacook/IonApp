@@ -39,6 +39,7 @@ public class AnnouncementsFragment extends Fragment {
 
             for (Announcement announcement : announcements) {
                 AnnouncementFragment fragment = AnnouncementFragment.newInstance(announcement);
+
                 transaction.add(R.id.announcements_container, fragment);
             }
 

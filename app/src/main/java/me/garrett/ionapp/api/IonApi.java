@@ -107,6 +107,7 @@ public class IonApi {
     }
 
     public void clearAuthState() {
+        authState = new AuthState();
         preferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 

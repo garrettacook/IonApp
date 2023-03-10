@@ -1,6 +1,7 @@
 package me.garrett.ionapp.api;
 
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 
 import androidx.annotation.NonNull;
@@ -121,9 +122,16 @@ public class Announcement {
     }
 
     @NonNull
-    public String getContent() {
-        Spanned spanned = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY);
-        return spanned.toString().trim();
+    public Spanned getContent() {
+        SpannableStringBuilder spannable = (SpannableStringBuilder) HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_LEGACY);
+
+        String text = spannable.toString();
+        int trimEnd = text.length();
+        while (trimEnd > 0 && text.charAt(trimEnd - 1) == '\n') {
+            trimEnd--;
+        }
+
+        return spannable.delete(trimEnd, text.length());
     }
 
     @NonNull

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            Log.i("IonApp", "Settings clicked!");
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (id == R.id.action_logout) {
             IonApi.getInstance(this).clearAuthState();

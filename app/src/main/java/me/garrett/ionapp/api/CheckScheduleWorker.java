@@ -53,19 +53,18 @@ public class CheckScheduleWorker extends Worker {
             if (schedule.isEmpty())
                 return Result.success();
 
-            Instant checkTime = schedule.getEnd().minus(5, ChronoUnit.MINUTES);
-            if (checkTime.isBefore(Instant.now()))
-                return Result.success();
-
             AlarmManager alarmManager = getApplicationContext().getSystemService(AlarmManager.class);
 
-            {
-                Log.d("IonApp", "Scheduling alarm for " + checkTime);
-                Intent intent = new Intent(getApplicationContext(), StartFindBusWorkerReceiver.class);
+            Instant busCheckTime = schedule.getEnd().minus(5, ChronoUnit.MINUTES);
+            Instant busCheckEnd = busCheckTime.plus(FindBusWorker.DURATION);
+            if (Instant.now().isBefore(busCheckEnd)) {
+
+                Intent intent = StartFindBusWorkerReceiver.createIntent(getApplicationContext(), busCheckEnd);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
+                Log.d("IonApp", "Scheduling bus alarm for " + busCheckTime);
                 alarmManager.cancel(pendingIntent); // avoid duplicate alarms
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, checkTime.toEpochMilli(), pendingIntent);
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, busCheckTime.toEpochMilli(), pendingIntent);
             }
 
             String date = schedule.getDate().format(IonApi.DATE_FORMAT);
@@ -114,6 +113,8 @@ public class CheckScheduleWorker extends Worker {
 
             Notifications.sendStatusNotification(getApplicationContext(), e.getClass().getSimpleName() + ": " + e.getMessage());
             return Result.retry();
+        } finally {
+            authService.dispose();
         }
     }
 

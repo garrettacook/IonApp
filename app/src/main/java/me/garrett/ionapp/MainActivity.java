@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         Button cancelButton = findViewById(R.id.cancelButton);
         beginCheckingButton.setOnClickListener(view -> {
             beginCheckingButton.setEnabled(false);
-            FindBusWorker.start(this);
+            FindBusWorker.start(this, Instant.now().plus(FindBusWorker.DURATION).toEpochMilli());
         });
         cancelButton.setOnClickListener(view -> {
             FindBusWorker.cancel(this);

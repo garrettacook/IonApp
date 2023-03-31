@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Schedule {
@@ -114,6 +115,12 @@ public class Schedule {
     @NonNull
     public List<Block> getBlocks() {
         return Collections.unmodifiableList(blocks);
+    }
+
+    @NonNull
+    public Optional<Block> getLunchBlock() {
+        return blocks.stream().filter(b -> b.getName().equalsIgnoreCase("lunch"))
+                .findFirst();
     }
 
     @NonNull

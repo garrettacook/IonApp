@@ -22,6 +22,9 @@
         <receiver
             android:name=".EighthTransitionReceiver"
             android:enabled="true" />
+        <receiver
+            android:name=".EighthReminderReceiver"
+            android:enabled="true" />
 
         <activity
             android:name=".LoginActivity"

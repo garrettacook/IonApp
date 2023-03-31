@@ -20,4 +20,6 @@
     <string name="force_token_refresh">Force Token Refresh</string>
     <string name="test">Test</string>
     <string name="announcements_channel_name">Announcements</string>
+    <string name="not_signed_up">You are not signed up for %s block</string>
+    <string name="signup_cancelled">%s was cancelled</string>
 </resources>

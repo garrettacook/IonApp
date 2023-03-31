@@ -16,12 +16,14 @@ import net.openid.appauth.AuthorizationService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import me.garrett.ionapp.DebugUtils;
+import me.garrett.ionapp.EighthReminderReceiver;
 import me.garrett.ionapp.EighthTransitionReceiver;
 import me.garrett.ionapp.Notifications;
 import me.garrett.ionapp.StartFindBusWorkerReceiver;
@@ -72,21 +74,40 @@ public class CheckScheduleWorker extends Worker {
             if (!date.equals(history.getString(LAST_SCHEDULE_DATE_KEY, null))) {
 
                 Map<Character, Instant> transitionTimes = schedule.getEighthTransitionTimes();
-                for (Map.Entry<Character, Instant> entry : transitionTimes.entrySet()) {
-                    char block = entry.getKey();
-                    Instant instant = entry.getValue();
+                if (!transitionTimes.isEmpty()) {
 
-                    Intent intent = EighthTransitionReceiver.createIntent(getApplicationContext(), date, block);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), block, intent, PendingIntent.FLAG_IMMUTABLE);
+                    for (Map.Entry<Character, Instant> entry : transitionTimes.entrySet()) {
+                        char block = entry.getKey();
+                        Instant instant = entry.getValue();
+                        if (instant.isBefore(Instant.now().minus(5, ChronoUnit.MINUTES)))
+                            continue;
 
-                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
-                    Log.d("IonApp", "Scheduled " + block + " block alarm for " + instant);
+                        Intent intent = EighthTransitionReceiver.createIntent(getApplicationContext(), date, block);
+                        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), block, intent, PendingIntent.FLAG_IMMUTABLE);
+
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
+                        Log.d("IonApp", "Scheduled " + block + " block alarm for " + instant);
+                    }
+
+                    schedule.getLunchBlock().ifPresent(lunchBlock -> {
+                        Instant lunchEnd = ZonedDateTime.of(schedule.getDate(), lunchBlock.getEnd(), IonApi.ION_TIME_ZONE).toInstant();
+                        if (Instant.now().isAfter(lunchEnd))
+                            return;
+
+                        Instant instant = ZonedDateTime.of(schedule.getDate(), lunchBlock.getStart(), IonApi.ION_TIME_ZONE).toInstant();
+
+                        Intent intent = EighthReminderReceiver.createIntent(getApplicationContext(), date, transitionTimes.keySet());
+                        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instant.toEpochMilli(), pendingIntent);
+                        Log.d("IonApp", "Scheduled signup check alarm for " + instant);
+                    });
+
+                    Notifications.sendStatusNotification(getApplicationContext(),
+                            "Scheduled alarms for blocks: " +
+                                    transitionTimes.keySet().stream().map(Object::toString).collect(Collectors.joining(", "))
+                    );
                 }
-
-                Notifications.sendStatusNotification(getApplicationContext(),
-                        "Scheduled alarms for blocks: " +
-                                transitionTimes.keySet().stream().map(Object::toString).collect(Collectors.joining(", "))
-                );
 
                 history.edit().putString(LAST_SCHEDULE_DATE_KEY, date).apply();
             }

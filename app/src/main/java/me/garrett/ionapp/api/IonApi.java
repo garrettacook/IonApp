@@ -14,7 +14,6 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.TokenResponse;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,9 +27,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
@@ -243,31 +246,45 @@ public class IonApi {
         return get(authService, "signups/user", JSONArray::new);
     }
 
-    public @NotNull
-    CompletableFuture<Optional<Signup>> getSignup(@NonNull AuthorizationService authService, @NonNull String date, char block) {
+    public @NonNull
+    CompletableFuture<Map<Character, Signup>> getSignups(@NonNull AuthorizationService authService, @NonNull String date, @NonNull Set<Character> blocks) {
         return getSignups(authService).thenComposeAsync(signupsJsonArray -> {
             try {
 
+                Map<Character, Signup> signups = new HashMap<>();
                 for (int i = 0; i < signupsJsonArray.length(); i++) {
                     JSONObject signupJson = signupsJsonArray.getJSONObject(i);
 
                     JSONObject blockJson = signupJson.getJSONObject("block");
-                    if (blockJson.getString("date").equals(date) && blockJson.getString("block_letter").charAt(0) == block) {
+                    char blockLetter = blockJson.getString("block_letter").charAt(0);
+                    if (blockJson.getString("date").equals(date) && blocks.contains(blockLetter)) {
 
                         Signup signup = new Signup(blockJson.getInt("id"), signupJson.getJSONObject("activity").getInt("id"));
-                        return CompletableFuture.completedFuture(Optional.of(signup));
+                        signups.put(blockLetter, signup);
+                        if (signups.size() >= blocks.size())
+                            break;
 
                     }
 
                 }
-                return CompletableFuture.completedFuture(Optional.empty());
+                return CompletableFuture.completedFuture(signups);
 
             } catch (JSONException e) {
-                CompletableFuture<Optional<Signup>> future = new CompletableFuture<>();
+                CompletableFuture<Map<Character, Signup>> future = new CompletableFuture<>();
                 future.completeExceptionally(e);
                 return future;
             }
         });
+    }
+
+    public @NonNull
+    CompletableFuture<Optional<Signup>> getSignup(@NonNull AuthorizationService authService, @NonNull String date, char block) {
+        return getSignups(authService, date, Collections.singleton(block)).thenApply(map -> map.values().stream().findAny());
+    }
+
+    public @NonNull
+    CompletableFuture<JSONObject> getBlocks(@NonNull AuthorizationService authService, @NonNull String date) {
+        return get(authService, String.format(Locale.ROOT, "blocks?date=%s", date), JSONObject::new);
     }
 
     public @NonNull

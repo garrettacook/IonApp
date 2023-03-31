@@ -6,10 +6,9 @@ import android.content.Intent;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import org.jetbrains.annotations.NotNull;
 
 import me.garrett.ionapp.api.Announcement;
 
@@ -57,7 +56,17 @@ public final class Notifications {
         NotificationManagerCompat.from(context).notify(EIGHTH_ACTIVITY_ID, builder.build());
     }
 
-    public static void sendAnnouncementNotification(@NotNull Context context, @NonNull Announcement announcement) {
+    public static void sendEighthSignupReminder(@NonNull Context context, int blockId, char blockLetter, @Nullable String cancelled) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, EIGHTH_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(context.getString(R.string.not_signed_up, blockLetter))
+                .setContentText(cancelled != null ? context.getString(R.string.signup_cancelled, cancelled) : null)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(getWebLinkPendingIntent(context, "eighth/signup/" + blockId));
+        NotificationManagerCompat.from(context).notify(blockId, builder.build());
+    }
+
+    public static void sendAnnouncementNotification(@NonNull Context context, @NonNull Announcement announcement) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ANNOUNCEMENTS_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(announcement.getTitle())

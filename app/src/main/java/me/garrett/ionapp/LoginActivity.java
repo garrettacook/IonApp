@@ -19,6 +19,7 @@ import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
+import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenRequest;
 
@@ -28,6 +29,11 @@ import java.util.Optional;
 import me.garrett.ionapp.api.IonApi;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private static final AuthorizationServiceConfiguration SERVICE_CONFIG =
+            new AuthorizationServiceConfiguration(
+                    Uri.parse(IonUtils.AUTHORIZATION_ENDPOINT),
+                    Uri.parse(IonUtils.TOKEN_ENDPOINT));
 
     private AuthorizationService authService;
     private ActivityResultLauncher<Intent> authResultLauncher;
@@ -68,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void authorize() {
         AuthorizationRequest authRequest = new AuthorizationRequest.Builder(
-                IonUtils.SERVICE_CONFIG,
+                SERVICE_CONFIG,
                 IonUtils.CLIENT_ID,
                 ResponseTypeValues.CODE, // the response_type value: we want a code
                 Uri.parse("https://gcook.sites.tjhsst.edu/appauth") // the redirect URI to which the auth response is sent

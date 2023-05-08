@@ -33,7 +33,8 @@ public final class Notifications {
                 .setContentTitle(context.getString(R.string.bus_arrived, route))
                 .setContentText(context.getString(R.string.generic_bus_status, locationMessage))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(getWebLinkPendingIntent(context, "bus"));
+                .setContentIntent(getWebLinkPendingIntent(context, "bus"))
+                .setAutoCancel(true);
         NotificationManagerCompat.from(context).notify(BUS_NOTIFICATION_ID, builder.build());
     }
 
@@ -52,7 +53,8 @@ public final class Notifications {
                 .setContentTitle(activity)
                 .setContentText(context.getString(R.string.activity_location, room))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(getWebLinkPendingIntent(context, "eighth/glance"));
+                .setContentIntent(getWebLinkPendingIntent(context, "eighth/glance"))
+                .setAutoCancel(true);
         NotificationManagerCompat.from(context).notify(EIGHTH_ACTIVITY_ID, builder.build());
     }
 
@@ -62,7 +64,8 @@ public final class Notifications {
                 .setContentTitle(context.getString(R.string.not_signed_up, blockLetter))
                 .setContentText(cancelled != null ? context.getString(R.string.signup_cancelled, cancelled) : null)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(getWebLinkPendingIntent(context, "eighth/signup/" + blockId));
+                .setContentIntent(getWebLinkPendingIntent(context, "eighth/signup/" + blockId))
+                .setAutoCancel(true);
         NotificationManagerCompat.from(context).notify(blockId, builder.build());
     }
 
@@ -72,7 +75,8 @@ public final class Notifications {
                 .setContentTitle(announcement.getTitle())
                 .setContentText(announcement.getContent())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setContentIntent(getWebLinkPendingIntent(context, "announcements/" + announcement.getId()));
+                .setContentIntent(getWebLinkPendingIntent(context, "announcements/" + announcement.getId()))
+                .setAutoCancel(true);
         NotificationManagerCompat.from(context).notify(announcement.getId(), builder.build());
     }
 

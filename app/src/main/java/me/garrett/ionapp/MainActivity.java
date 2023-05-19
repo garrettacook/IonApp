@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.work.Constraints;
@@ -179,6 +180,16 @@ public class MainActivity extends AppCompatActivity {
         authService.dispose();
     }
 
+    private static @Nullable String censor(@Nullable String token) {
+        if (token == null)
+            return null;
+
+        StringBuilder builder = new StringBuilder(token);
+        for (int i = 3; i < builder.length(); i++)
+            builder.replace(i, i + 1, "*");
+        return builder.toString();
+    }
+
     private void updateAuthStateTextView() {
         IonApi api = IonApi.getInstance(this);
 
@@ -187,8 +198,8 @@ public class MainActivity extends AppCompatActivity {
         TextView authStateExpiresAtView = findViewById(R.id.authStateExpiresAtView);
         TextView authStateRefreshView = findViewById(R.id.authStateRefreshView);
 
-        authStateAccessTokenView.setText(api.getAccessToken());
-        authStateRefreshTokenView.setText(api.getRefreshToken());
+        authStateAccessTokenView.setText(censor(api.getAccessToken()));
+        authStateRefreshTokenView.setText(censor(api.getRefreshToken()));
         authStateExpiresAtView.setText(Optional.ofNullable(api.getAccessTokenExpirationTime()).map(Instant::ofEpochMilli).map(Instant::toString).orElse("null"));
         authStateRefreshView.setText(String.valueOf(api.getNeedsTokenRefresh()));
     }

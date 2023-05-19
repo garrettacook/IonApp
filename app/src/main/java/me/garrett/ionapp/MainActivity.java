@@ -59,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
             IonApi.getInstance(this).clearAuthState();
             startActivity(new Intent(this, LoginActivity.class));
             return true;
+        } else if (id == R.id.action_test_activity) {
+            startActivity(new Intent(this, TestActivity.class));
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

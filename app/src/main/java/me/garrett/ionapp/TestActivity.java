@@ -1,14 +1,9 @@
 package me.garrett.ionapp;
 
-import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,11 +14,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -33,7 +23,6 @@ import net.openid.appauth.AuthorizationService;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import me.garrett.ionapp.api.Bus;
@@ -43,65 +32,12 @@ import me.garrett.ionapp.api.IonApi;
 
 public class TestActivity extends AppCompatActivity {
 
-    private static final String CHECK_SCHEDULE_UNIQUE_WORK_NAME = "CheckIonSchedule";
-
     private AuthorizationService authService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
-
-        NotificationManager notificationManager = getSystemService(NotificationManager.class);
-
-        NotificationChannel busChannel = new NotificationChannel(
-                Notifications.BUS_CHANNEL_ID, getString(R.string.bus_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT);
-        notificationManager.createNotificationChannel(busChannel);
-
-        NotificationChannel testChannel = new NotificationChannel(
-                Notifications.TEST_CHANNEL_ID, "Tests",
-                NotificationManager.IMPORTANCE_LOW);
-        notificationManager.createNotificationChannel(testChannel);
-
-        NotificationChannel eighthChannel = new NotificationChannel(
-                Notifications.EIGHTH_CHANNEL_ID, getString(R.string.eighth_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT);
-        notificationManager.createNotificationChannel(eighthChannel);
-
-        NotificationChannel announcementsChannel = new NotificationChannel(
-                Notifications.ANNOUNCEMENTS_CHANNEL_ID, getString(R.string.announcements_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT);
-        notificationManager.createNotificationChannel(announcementsChannel);
-
-        PeriodicWorkRequest checkScheduleRequest = new
-                PeriodicWorkRequest.Builder(CheckScheduleWorker.class, 1, TimeUnit.HOURS)
-                .setConstraints(new Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .build();
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                CHECK_SCHEDULE_UNIQUE_WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
-                checkScheduleRequest);
-
-        // redirect to login activity if not authorized
-        if (!IonApi.getInstance(this).isAuthorized()) {
-            startActivity(new Intent(this, LoginActivity.class));
-            return;
-        }
-
-        // Explicit permission request for notifications required on API level 33 or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
-
-            }
-
-        }
 
         authService = new AuthorizationService(this);
 
@@ -159,7 +95,7 @@ public class TestActivity extends AppCompatActivity {
 
         Button resetWorkersButton = findViewById(R.id.resetWorkersButton);
         resetWorkersButton.setOnClickListener(view ->
-                WorkManager.getInstance(this).cancelUniqueWork(CHECK_SCHEDULE_UNIQUE_WORK_NAME));
+                WorkManager.getInstance(this).cancelUniqueWork(MainActivity.CHECK_SCHEDULE_UNIQUE_WORK_NAME));
 
         Button forceRefreshButton = findViewById(R.id.forceRefreshButton);
         forceRefreshButton.setOnClickListener(view -> IonApi.getInstance(this).setNeedsTokenRefresh(true));
